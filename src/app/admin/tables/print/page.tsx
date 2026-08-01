@@ -26,8 +26,8 @@ export const dynamic = "force-dynamic";
  * than not printing one.
  */
 export default async function PrintSheetPage() {
-  const restaurant = getRestaurant();
-  const tables = listTables(restaurant.id).filter((table) => table.isActive);
+  const restaurant = await getRestaurant();
+  const tables = (await listTables(restaurant.id)).filter((table) => table.isActive);
   const origin = await publicOrigin();
 
   const cells = await Promise.all(

@@ -18,7 +18,7 @@ export default async function AdminOrdersPage({
   searchParams: Promise<{ from?: string; to?: string }>;
 }) {
   const { from, to } = await searchParams;
-  const restaurant = getRestaurant();
+  const restaurant = await getRestaurant();
 
   // A server component rendered per request (`dynamic = "force-dynamic"`),
   // not a client render the compiler has to keep pure.
@@ -28,7 +28,7 @@ export default async function AdminOrdersPage({
   const toKey = to ?? today;
 
   const range = dayRange(fromKey, toKey);
-  const orders = getOrderHistory(restaurant.id, range);
+  const orders = await getOrderHistory(restaurant.id, range);
 
   const revenue = orders
     .filter((order) => order.status !== "cancelled")

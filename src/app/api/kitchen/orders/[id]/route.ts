@@ -30,12 +30,13 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
       );
     }
 
-    const existing = getOrder(id);
+    const existing = await getOrder(id);
     if (!existing || existing.restaurantId !== session.restaurantId) {
       throw new OrderError("order_not_found", "Order not found");
     }
 
-    const order = parsed.data.action === "advance" ? advanceOrder(id) : cancelOrder(id);
+    const order =
+      parsed.data.action === "advance" ? await advanceOrder(id) : await cancelOrder(id);
 
     return NextResponse.json({ order }, { headers: NO_STORE });
   } catch (error) {

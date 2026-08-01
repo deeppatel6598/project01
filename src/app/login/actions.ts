@@ -25,7 +25,7 @@ export async function signIn(_previous: SignInState, formData: FormData): Promis
     return { error: copy.errors.signInFailed };
   }
 
-  const staff = authenticate(email, password);
+  const staff = await authenticate(email, password);
   if (!staff) {
     return { error: copy.errors.signInFailed };
   }

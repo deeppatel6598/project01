@@ -23,7 +23,7 @@ export async function generateMetadata({
   params: Promise<{ code: string }>;
 }): Promise<Metadata> {
   const { code } = await params;
-  const table = findTableByCode(code);
+  const table = await findTableByCode(code);
 
   if (!table) return { title: copy.errors.tableNotLinkedTitle };
   return { title: `${table.label} — menu` };
@@ -31,7 +31,7 @@ export async function generateMetadata({
 
 export default async function TablePage({ params }: { params: Promise<{ code: string }> }) {
   const { code } = await params;
-  const table = findTableByCode(code);
+  const table = await findTableByCode(code);
 
   // A dead sticker gets a real answer, not a framework 404. Someone is
   // standing in the cafe holding a phone, and "This QR isn't linked to a
@@ -40,8 +40,8 @@ export default async function TablePage({ params }: { params: Promise<{ code: st
     return <NotLinked />;
   }
 
-  const restaurant = getRestaurant();
-  const sections = getGuestMenu(restaurant.id);
+  const restaurant = await getRestaurant();
+  const sections = await getGuestMenu(restaurant.id);
 
   return <GuestApp restaurant={restaurant} table={table} sections={sections} />;
 }

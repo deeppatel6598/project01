@@ -21,7 +21,7 @@ export async function GET() {
     const session = await requireStaff();
 
     return NextResponse.json(
-      { orders: getBoardOrders(session.restaurantId), serverNow: Date.now() },
+      { orders: await getBoardOrders(session.restaurantId), serverNow: Date.now() },
       { headers: NO_STORE },
     );
   } catch (error) {

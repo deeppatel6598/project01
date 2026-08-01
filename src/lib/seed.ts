@@ -28,107 +28,90 @@ export interface SeedResult {
   skipped: boolean;
 }
 
-export function seed(options: SeedOptions = {}, db: DB = getDb()): SeedResult {
-  const existing = db.prepare<[], { id: string }>("SELECT id FROM restaurants LIMIT 1").get();
+export async function seed(options: SeedOptions = {}, sql: DB = getDb()): Promise<SeedResult> {
+  const [existing] = await sql<{ id: string }[]>`SELECT id FROM restaurants LIMIT 1`;
 
   if (existing && !options.force) {
-    const tables = db
-      .prepare<[], { label: string; code: string }>(
-        "SELECT label, code FROM dining_tables ORDER BY label",
-      )
-      .all();
-    const count = db.prepare<[], { n: number }>("SELECT COUNT(*) AS n FROM menu_items").get();
+    const tables = await sql<{ label: string; code: string }[]>`
+      SELECT label, code FROM dining_tables ORDER BY label
+    `;
+    const [count] = await sql<{ n: string }[]>`SELECT COUNT(*) AS n FROM menu_items`;
 
     return {
       restaurantId: existing.id,
-      tables,
-      itemCount: count?.n ?? 0,
+      tables: [...tables],
+      itemCount: Number(count?.n ?? 0),
       ownerEmail: null,
       skipped: true,
     };
   }
 
   if (existing && options.force) {
-    // Order matters only for readability — the schema cascades — but being
-    // explicit makes it obvious that a force reset destroys order history.
-    db.exec(`
-      DELETE FROM order_items;
-      DELETE FROM orders;
-      DELETE FROM order_counters;
-      DELETE FROM guest_orders_log;
-      DELETE FROM menu_items;
-      DELETE FROM categories;
-      DELETE FROM dining_tables;
-      DELETE FROM staff_members;
-      DELETE FROM restaurants;
-    `);
+    // The schema cascades, but being explicit makes it obvious that a force
+    // reset destroys order history.
+    await sql`TRUNCATE order_items, orders, order_counters, guest_orders_log,
+                       menu_items, categories, dining_tables, staff_members, restaurants
+              RESTART IDENTITY CASCADE`;
   }
 
   const restaurantId = generateId();
 
-  db.prepare(
-    `INSERT INTO restaurants (
-       id, name, slug, address, phone, currency, hero_image_url,
-       hours_label, is_accepting_orders, created_at
-     ) VALUES (?, ?, ?, ?, ?, 'INR', ?, ?, 1, ?)`,
-  ).run(
-    restaurantId,
-    SEED_RESTAURANT.name,
-    SEED_RESTAURANT.slug,
-    SEED_RESTAURANT.address,
-    SEED_RESTAURANT.phone,
-    SEED_RESTAURANT.heroImageId
-      ? unsplashUrl(SEED_RESTAURANT.heroImageId, 900)
-      : SEED_RESTAURANT.heroArt,
-    SEED_RESTAURANT.hoursLabel,
-    Date.now(),
-  );
-
-  const insertCategory = db.prepare(
-    "INSERT INTO categories (id, restaurant_id, name, sort_order, is_active) VALUES (?, ?, ?, ?, 1)",
-  );
-  const insertItem = db.prepare(
-    `INSERT INTO menu_items (
-       id, restaurant_id, category_id, name, description, price,
-       image_url, badge, is_veg, is_available, sort_order
-     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?)`,
-  );
+  await sql`
+    INSERT INTO restaurants (
+      id, name, slug, address, phone, currency, hero_image_url, hours_label, is_accepting_orders
+    ) VALUES (
+      ${restaurantId}, ${SEED_RESTAURANT.name}, ${SEED_RESTAURANT.slug},
+      ${SEED_RESTAURANT.address}, ${SEED_RESTAURANT.phone}, 'INR',
+      ${
+        SEED_RESTAURANT.heroImageId
+          ? unsplashUrl(SEED_RESTAURANT.heroImageId, 900)
+          : SEED_RESTAURANT.heroArt
+      },
+      ${SEED_RESTAURANT.hoursLabel}, true
+    )
+  `;
 
   let itemCount = 0;
 
-  SEED_MENU.forEach((category, categoryIndex) => {
+  for (const [categoryIndex, category] of SEED_MENU.entries()) {
     const categoryId = generateId();
-    insertCategory.run(categoryId, restaurantId, category.name, categoryIndex);
 
-    category.items.forEach((item, itemIndex) => {
-      insertItem.run(
-        generateId(),
-        restaurantId,
-        categoryId,
-        item.name,
-        item.description ?? null,
-        rupeesToPaise(item.price),
-        item.imageId ? unsplashUrl(item.imageId, 200) : category.art,
-        item.badge ?? null,
-        item.soldOut ? 0 : 1,
-        itemIndex,
-      );
-      itemCount += 1;
-    });
-  });
+    await sql`
+      INSERT INTO categories (id, restaurant_id, name, sort_order, is_active)
+      VALUES (${categoryId}, ${restaurantId}, ${category.name}, ${categoryIndex}, true)
+    `;
+
+    const rows = category.items.map((item, itemIndex) => ({
+      id: generateId(),
+      restaurant_id: restaurantId,
+      category_id: categoryId,
+      name: item.name,
+      description: item.description ?? null,
+      price: rupeesToPaise(item.price),
+      image_url: item.imageId ? unsplashUrl(item.imageId, 200) : category.art,
+      badge: item.badge ?? null,
+      is_veg: true,
+      is_available: !item.soldOut,
+      sort_order: itemIndex,
+    }));
+
+    await sql`INSERT INTO menu_items ${sql(rows)}`;
+    itemCount += rows.length;
+  }
 
   // Every table gets a random code — see `lib/codes.ts` for why they are not
   // `/t/1` through `/t/12`.
-  const tables = SEED_TABLES.map((label) => {
-    const table = createTable(restaurantId, label, null, db);
-    return { label: table.label, code: table.code };
-  });
+  const tables: Array<{ label: string; code: string }> = [];
+  for (const label of SEED_TABLES) {
+    const table = await createTable(restaurantId, label, null, sql);
+    tables.push({ label: table.label, code: table.code });
+  }
 
   const ownerEmail = options.ownerEmail ?? process.env.TABLEKIT_OWNER_EMAIL ?? null;
   const ownerPassword = options.ownerPassword ?? process.env.TABLEKIT_OWNER_PASSWORD ?? null;
 
   if (ownerEmail && ownerPassword) {
-    createStaffMember(restaurantId, ownerEmail, ownerPassword, "owner", db);
+    await createStaffMember(restaurantId, ownerEmail, ownerPassword, "owner", sql);
   }
 
   return { restaurantId, tables, itemCount, ownerEmail, skipped: false };

@@ -18,8 +18,8 @@ export const dynamic = "force-dynamic";
  * construction.
  */
 export default async function HomePage() {
-  const restaurant = getRestaurant();
-  const tables = listTables(restaurant.id).filter((table) => table.isActive);
+  const restaurant = await getRestaurant();
+  const tables = (await listTables(restaurant.id)).filter((table) => table.isActive);
   const sample = tables[3] ?? tables[0];
 
   return (

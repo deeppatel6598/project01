@@ -1,170 +1,175 @@
 # Deployment
 
-## What this build needs
+Tablekit runs on **Netlify + Supabase Postgres**. This document is the
+walkthrough; if you only want the checklist, it is §1–§4.
 
-**A single long-lived Node process with a writable disk.** A small VM, a
-container on Fly/Railway/Render, or a box in the back office all work. Two
-things drive that:
+## Why this shape
 
-- `better-sqlite3` writes to a file, so the disk must persist across restarts.
-- The realtime event bus is in-process, so publisher and subscriber have to be
-  the same process.
+The app was first built on SQLite, which is excellent for a single-process
+server and impossible on Netlify: Functions have no persistent writable disk,
+so the database file vanishes between invocations and every page returns 500.
 
-Neither is a dead end on serverless — see [Serverless](#serverless) below.
+The data layer is now Postgres over the `postgres` driver, connected through
+Supabase's **transaction pooler**. That combination is what makes serverless
+work — see §2, which is the single most common way this deploy breaks.
 
-## Going live
+---
 
-```bash
-npm ci
-npm run build
-npm run seed          # once, on the real box
-TABLEKIT_SECRET=... npm start
-```
+## 1. Create the database
 
-### 1. Set the secret
+Supabase → **New project** (the free tier is enough for one cafe). Pick a
+region near the cafe; for Gandhinagar that is `ap-south-1` (Mumbai).
 
-```bash
-openssl rand -base64 32
-```
-
-into `TABLEKIT_SECRET`. **The app refuses to start in production without it** —
-a public default would let anyone mint themselves a staff session.
-
-### 2. Point the database at a real volume
+Then apply the schema, either with the CLI:
 
 ```bash
-TABLEKIT_DB_PATH=/var/lib/tablekit/tablekit.db
+supabase link --project-ref <your-ref>
+supabase db push          # applies supabase/migrations/0001_init.sql
 ```
 
-The default (`data/tablekit.db`) sits inside the deployment directory and is
-lost on every redeploy. On a container, mount a volume.
+…or by pasting `supabase/migrations/0001_init.sql` into the SQL editor. It is
+idempotent, so running it twice is safe.
 
-### 3. Set the public origin
+## 2. Get the right connection string
+
+Supabase → **Project Settings → Database → Connection string**. Three are
+offered and **only one works from a serverless function**:
+
+| String | Host | Works on Netlify? |
+| --- | --- | --- |
+| Direct | `db.<ref>.supabase.co:5432` | ❌ IPv6-only. Netlify Functions are IPv4, so it cannot even resolve — you get `ENETUNREACH` or a connect timeout on every request. |
+| Session pooler | `...pooler.supabase.com:5432` | ⚠️ IPv4, but holds one server connection per client for its whole life. A burst of cold starts exhausts the pool. |
+| **Transaction pooler** | `...pooler.supabase.com:6543` | ✅ Borrows a connection per statement and returns it. Use this one. |
+
+Copy the **Transaction pooler** URI and substitute your database password.
+
+The app checks this for you: on Netlify it refuses to start with a clear
+message if `DATABASE_URL` points at the direct connection or the session
+pooler, rather than half-working and timing out under load.
+
+## 3. Set the environment variables
+
+Netlify → **Site configuration → Environment variables**:
+
+| Variable | Value |
+| --- | --- |
+| `DATABASE_URL` | The transaction-pooler URI from §2 |
+| `TABLEKIT_SECRET` | `openssl rand -base64 32` |
+| `TABLEKIT_PUBLIC_ORIGIN` | `https://<your-site>.netlify.app` |
+
+`TABLEKIT_SECRET` signs staff session cookies and keys the IP hash in the
+rate-limit log. **The app deliberately refuses to boot in production without
+it** — signing sessions with a public default would let anyone mint themselves
+a staff login.
+
+`TABLEKIT_PUBLIC_ORIGIN` is the origin printed into the QR codes. Without it
+they are built from the request `Host` header, which behind Netlify's proxy is
+not always the address a guest's phone can reach — and a sticker with the wrong
+URL on it is scrap paper.
+
+## 4. Deploy and seed
+
+Connect the repository and deploy. `netlify.toml` already pins Node 22 and
+enables `@netlify/plugin-nextjs`, which is what routes server components, API
+routes and server actions through Functions. Without that plugin Netlify
+publishes raw build output and the site renders as unstyled fragments.
+
+Then seed the menu and tables, once, from your machine:
 
 ```bash
-TABLEKIT_PUBLIC_ORIGIN=https://order.roastandtoast.example
+DATABASE_URL='<transaction pooler URI>' npm run seed
 ```
 
-This is the origin printed into the QR codes. Behind a proxy the request's own
-`Host` header can be an internal name, and a sticker printed with
-`http://10.0.0.4:3000` on it is scrap paper.
+It prints the twelve table codes and the owner login. It is idempotent: an
+existing restaurant row makes it a no-op, so re-running it cannot duplicate the
+menu or hand out fresh table codes while the old stickers are still on tables.
 
-### 4. Change the owner password
+---
 
-The seed prints whatever it used. Change it before the cafe opens.
+## Realtime on serverless
 
-### 5. Confirm the prices
+`netlify.toml` sets `NEXT_PUBLIC_TABLEKIT_STREAM=off`, which stops the kitchen
+board attempting the SSE stream. Functions cannot hold a connection open for
+more than a few seconds, so `EventSource` would fail, reconnect and fail again
+— a retry loop that burns an invocation every few seconds and never succeeds.
 
-Every seeded price is an estimate pulled from the cafe's reviews. Sit with the
-owner and go through `/admin/menu` before a single sticker goes on a table.
+With the stream off, the board runs on its **20-second reconciling poll**,
+which is the mode it was designed to survive on: it replaces the whole list
+with the server's answer every tick, so it cannot hold a duplicate or a
+phantom. The connection dot shows amber "Polling · 20s" rather than green, and
+that is accurate rather than a defect.
 
-### 6. Print the stickers
+**Invocation budget.** One pass screen polling every 20s over a 12-hour day is
+about 2,200 invocations a day, ~65k a month — inside Netlify's free tier. Two
+screens run at roughly 130k and will exceed it. If the cafe runs more than one
+board, either raise the poll interval or move to a paid tier.
 
-`/admin/tables/print` — A4, six per page, level-H error correction (these get
-spilled on). Print at **100% scale**; "fit to page" shrinks the codes.
+To get true realtime back, run the app on a long-lived Node process (see below)
+and drop the `NEXT_PUBLIC_TABLEKIT_STREAM` variable — SSE then works as built.
 
-### Reverse proxy
+## Running it on a normal server instead
 
-The kitchen board holds an open SSE connection, so buffering must be off:
-
-```nginx
-location /api/kitchen/stream {
-    proxy_pass              http://127.0.0.1:3000;
-    proxy_http_version      1.1;
-    proxy_set_header        Connection '';
-    proxy_buffering         off;
-    proxy_read_timeout      1h;
-}
-```
-
-The route already sends `X-Accel-Buffering: no`, which nginx honours, but the
-read timeout still needs raising or the stream is reaped hourly. (It would
-reconnect — but the board would flicker to amber every hour for no reason.)
-
-Also forward `X-Forwarded-For` and `X-Forwarded-Proto`; the rate limiter and
-the QR origin both read them.
-
-## Backups
-
-The database is one file. With WAL journaling, copy it *with* its sidecars or
-use SQLite's own backup so you get a consistent snapshot:
+Everything also runs on any host with a persistent Node process — Fly, Railway,
+Render, a VPS:
 
 ```bash
-sqlite3 /var/lib/tablekit/tablekit.db ".backup '/backups/tablekit-$(date +%F).db'"
+npm ci && npm run build
+DATABASE_URL=... TABLEKIT_SECRET=... npm start
 ```
 
-Nightly is plenty for one cafe. Order history is the only thing that cannot be
-regenerated — the menu and tables can be re-seeded, though re-seeding rotates
-every table code and invalidates the printed stickers.
+There you can use the **direct** connection string, SSE works, and the board
+goes green. Nothing else changes.
 
 ## Images
 
 A fresh install ships with **no external image dependency**. `public/menu/`
-holds one piece of flat monochrome artwork per category, drawn in the
-Modernist idiom, and the seed points every item at its category's piece. The
-guest menu therefore paints completely on first load with nothing to fetch —
-which is the point on cafe wifi, and which means a deployment cannot end up
-showing a menu full of empty frames because someone's CDN is unreachable.
+holds one piece of monochrome-on-warm artwork per category and the seed points
+every item at its category's piece, so the guest menu paints completely with
+nothing to fetch — the point on cafe wifi, and it means the menu cannot show
+empty frames because a CDN is unreachable.
 
-Replacing them with the cafe's real photographs, in order of preference:
+To use the cafe's real photographs, in order of preference:
 
 1. **Local files.** Drop them in `public/menu/`, then set `image_url` on each
-   row to e.g. `/menu/cold-brew.jpg`. Still no external requests. Square
-   crops, ~400px, look best — they render at 76px on the menu and 32–40px on
-   dockets.
-2. **A remote host.** Set `imageId` in `src/lib/seed-data.ts` for the bundled
-   Unsplash ids, or write any absolute URL to `image_url`, and add the host to
+   row to e.g. `/menu/cold-brew.jpg`. Square crops, ~400px, look best — they
+   render at 92px on the menu and 34px on dockets.
+2. **A remote host.** Write any absolute URL to `image_url` and add the host to
    `images.remotePatterns` in `next.config.ts` (Unsplash is already listed).
 
-Note that `next/image` optimization is bypassed for `.svg` sources — the
-bundled artwork is already ~1KB of vector and needs no resizing, and turning
-on `dangerouslyAllowSVG` to optimize it would also permit remote SVG, which
-can carry script. Raster photographs go through the optimizer normally.
+`next/image` optimization is bypassed for `.svg` sources: the bundled artwork
+is ~1KB of vector needing no resizing, and enabling `dangerouslyAllowSVG` to
+optimize it would also permit remote SVG, which can carry script. Raster
+photographs go through the optimizer normally.
 
-Missing or failing images degrade to plain framed squares, never a
-broken-image icon, so none of this is release-blocking.
+Missing or failing images degrade to a plain warm tile, never a broken-image
+icon, so none of this is release-blocking.
 
-## Serverless
+## Backups
 
-Deploying to Vercel/Netlify functions changes two things:
+Supabase takes daily backups on paid tiers. On free, take your own before
+anything risky:
 
-**The database.** `better-sqlite3` needs a persistent writable disk that
-serverless does not have. Swap it for the Postgres path: apply
-`supabase/migrations/0001_init.sql` and reimplement `src/lib/db` and
-`src/lib/orders.ts` against it. The migration already contains the schema, the
-RLS policies and a `place_order` function enforcing the same rules — re-reading
-prices, clamping quantities, merging duplicates, rate limiting — so the port is
-mechanical rather than a redesign.
+```bash
+pg_dump "$DATABASE_URL" --data-only --inserts > backup-$(date +%F).sql
+```
 
-**Realtime.** `src/lib/events.ts` is an in-process `EventEmitter`. Across
-instances, a guest's order and the pass's stream land in different processes
-and no event is delivered. Replace it with one of:
-
-- Postgres `LISTEN`/`NOTIFY`
-- Supabase Realtime on `postgres_changes` for `orders`, filtered by
-  `restaurant_id`
-- Any pub/sub the platform offers
-
-`events.ts` is the only file that has to change — `publish()` and
-`subscribe()` are the whole interface.
-
-Until then the board **degrades correctly rather than silently**: the
-unconditional 20-second poll keeps it accurate, and the connection dot shows
-amber "Polling · 20s" instead of green. That is a real trade, not a bug, but a
-kitchen that sees new orders up to twenty seconds late is worth knowing about
-before you choose the platform.
+Order history is the only thing that cannot be regenerated — the menu and
+tables can be re-seeded, though re-seeding rotates every table code and
+invalidates the printed stickers.
 
 ## Health checks
 
-- `GET /` — renders from the database, so a 200 means the DB is readable.
+- `GET /` — renders from the database, so a 200 means the connection works.
 - `GET /api/kitchen/orders` — should be **401** without a session. If it ever
   returns 200, stop and investigate.
 
-## Monitoring
+## Troubleshooting
 
-Worth alerting on:
-
-- 5xx on `POST /api/orders` — a guest could not order.
-- A sustained rise in 429s on the same route — either a real burst or the rate
-  limiter is set too tight for a busy Sunday.
-- Disk usage on the database volume.
+| Symptom | Cause |
+| --- | --- |
+| Every page 500s, log shows `ENETUNREACH` or connect timeout | `DATABASE_URL` is the direct connection. Use the transaction pooler (§2). |
+| `TABLEKIT_SECRET must be set…` | The variable is missing. Generate one (§3). |
+| `No restaurant row found. Run npm run seed` | The schema exists but is empty. Run the seed (§4). |
+| Site renders as unstyled HTML fragments | `@netlify/plugin-nextjs` did not run. Check the deploy log for "Using Next.js Runtime"; `netlify.toml` must be at the repository root. |
+| QR codes point at the wrong host | `TABLEKIT_PUBLIC_ORIGIN` is unset (§3). |
+| Board dot is amber, not green | Expected on Netlify — the stream is off by design. See "Realtime on serverless". |

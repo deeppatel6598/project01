@@ -1,7 +1,6 @@
 import { getDb, type DB } from "./db";
 import {
   toCategory,
-  toInt,
   toMenuItem,
   toRestaurant,
   type CategoryRow,
@@ -18,52 +17,40 @@ import type { Category, MenuItem, MenuSection, Restaurant } from "./types";
  * here is guest-specific, so nothing in here needs a token.
  */
 
-export function getRestaurant(db: DB = getDb()): Restaurant {
-  const row = db
-    .prepare<[], RestaurantRow>("SELECT * FROM restaurants ORDER BY created_at LIMIT 1")
-    .get();
+export async function getRestaurant(sql: DB = getDb()): Promise<Restaurant> {
+  const rows = await sql<RestaurantRow[]>`
+    SELECT * FROM restaurants ORDER BY created_at LIMIT 1
+  `;
 
-  if (!row) {
+  if (rows.length === 0) {
     throw new Error(
       "No restaurant row found. Run `npm run seed` to create the Roast & Toast pilot data.",
     );
   }
-  return toRestaurant(row);
+  return toRestaurant(rows[0]!);
 }
 
-export function updateRestaurant(
+export async function updateRestaurant(
   restaurantId: string,
-  patch: Partial<Pick<Restaurant, "name" | "address" | "phone" | "hoursLabel" | "isAcceptingOrders">>,
-  db: DB = getDb(),
-): void {
-  const sets: string[] = [];
-  const values: Array<string | number> = [];
-
-  if (patch.name !== undefined) {
-    sets.push("name = ?");
-    values.push(patch.name);
-  }
-  if (patch.address !== undefined) {
-    sets.push("address = ?");
-    values.push(patch.address);
-  }
-  if (patch.phone !== undefined) {
-    sets.push("phone = ?");
-    values.push(patch.phone);
-  }
-  if (patch.hoursLabel !== undefined) {
-    sets.push("hours_label = ?");
-    values.push(patch.hoursLabel);
-  }
+  patch: Partial<
+    Pick<Restaurant, "name" | "address" | "phone" | "hoursLabel" | "isAcceptingOrders">
+  >,
+  sql: DB = getDb(),
+): Promise<void> {
+  // Only the keys actually present are written, so a partial patch cannot
+  // blank a column the caller never mentioned.
+  const columns: Record<string, string | boolean> = {};
+  if (patch.name !== undefined) columns.name = patch.name;
+  if (patch.address !== undefined) columns.address = patch.address;
+  if (patch.phone !== undefined) columns.phone = patch.phone;
+  if (patch.hoursLabel !== undefined) columns.hours_label = patch.hoursLabel;
   if (patch.isAcceptingOrders !== undefined) {
-    sets.push("is_accepting_orders = ?");
-    values.push(toInt(patch.isAcceptingOrders));
+    columns.is_accepting_orders = patch.isAcceptingOrders;
   }
 
-  if (sets.length === 0) return;
+  if (Object.keys(columns).length === 0) return;
 
-  values.push(restaurantId);
-  db.prepare(`UPDATE restaurants SET ${sets.join(", ")} WHERE id = ?`).run(...values);
+  await sql`UPDATE restaurants SET ${sql(columns)} WHERE id = ${restaurantId}`;
 }
 
 /**
@@ -71,27 +58,28 @@ export function updateRestaurant(
  *
  * Sold-out items are filtered out here rather than rendered greyed, so the
  * owner's availability toggle takes effect on the next load — which is the
- * acceptance criterion. The design's dimmed "Sold out" row still has a job:
- * it covers the case where an item sells out while a guest already has the
- * page open and the item sitting in their basket.
+ * acceptance criterion. The menu's dimmed "Sold out" state still has a job:
+ * it covers an item selling out while a guest already has the page open with
+ * it in their basket.
  */
-export function getGuestMenu(restaurantId: string, db: DB = getDb()): MenuSection[] {
-  const categories = db
-    .prepare<[string], CategoryRow>(
-      "SELECT * FROM categories WHERE restaurant_id = ? AND is_active = 1 ORDER BY sort_order, name",
-    )
-    .all(restaurantId)
-    .map(toCategory);
+export async function getGuestMenu(
+  restaurantId: string,
+  sql: DB = getDb(),
+): Promise<MenuSection[]> {
+  const [categoryRows, itemRows] = await Promise.all([
+    sql<CategoryRow[]>`
+      SELECT * FROM categories
+      WHERE restaurant_id = ${restaurantId} AND is_active = true
+      ORDER BY sort_order, name
+    `,
+    sql<MenuItemRow[]>`
+      SELECT * FROM menu_items
+      WHERE restaurant_id = ${restaurantId} AND is_available = true
+      ORDER BY sort_order, name
+    `,
+  ]);
 
-  const items = db
-    .prepare<[string], MenuItemRow>(
-      `SELECT * FROM menu_items
-       WHERE restaurant_id = ? AND is_available = 1
-       ORDER BY sort_order, name`,
-    )
-    .all(restaurantId)
-    .map(toMenuItem);
-
+  const items = itemRows.map(toMenuItem);
   const byCategory = new Map<string, MenuItem[]>();
   for (const item of items) {
     const bucket = byCategory.get(item.categoryId);
@@ -99,86 +87,73 @@ export function getGuestMenu(restaurantId: string, db: DB = getDb()): MenuSectio
     else byCategory.set(item.categoryId, [item]);
   }
 
-  return categories
+  return categoryRows
+    .map(toCategory)
     .map((category) => ({ category, items: byCategory.get(category.id) ?? [] }))
     .filter((section) => section.items.length > 0);
 }
 
 /** The admin menu: everything, including inactive and sold-out rows. */
-export function getFullMenu(restaurantId: string, db: DB = getDb()): MenuSection[] {
-  const categories = db
-    .prepare<[string], CategoryRow>(
-      "SELECT * FROM categories WHERE restaurant_id = ? ORDER BY sort_order, name",
-    )
-    .all(restaurantId)
-    .map(toCategory);
+export async function getFullMenu(
+  restaurantId: string,
+  sql: DB = getDb(),
+): Promise<MenuSection[]> {
+  const [categoryRows, itemRows] = await Promise.all([
+    sql<CategoryRow[]>`
+      SELECT * FROM categories WHERE restaurant_id = ${restaurantId} ORDER BY sort_order, name
+    `,
+    sql<MenuItemRow[]>`
+      SELECT * FROM menu_items WHERE restaurant_id = ${restaurantId} ORDER BY sort_order, name
+    `,
+  ]);
 
-  const items = db
-    .prepare<[string], MenuItemRow>(
-      "SELECT * FROM menu_items WHERE restaurant_id = ? ORDER BY sort_order, name",
-    )
-    .all(restaurantId)
-    .map(toMenuItem);
+  const items = itemRows.map(toMenuItem);
 
-  return categories.map((category) => ({
+  return categoryRows.map(toCategory).map((category) => ({
     category,
     items: items.filter((item) => item.categoryId === category.id),
   }));
 }
 
-export function getMenuItem(id: string, db: DB = getDb()): MenuItem | null {
-  const row = db.prepare<[string], MenuItemRow>("SELECT * FROM menu_items WHERE id = ?").get(id);
-  return row ? toMenuItem(row) : null;
+export async function getMenuItem(id: string, sql: DB = getDb()): Promise<MenuItem | null> {
+  const rows = await sql<MenuItemRow[]>`SELECT * FROM menu_items WHERE id = ${id}`;
+  return rows.length > 0 ? toMenuItem(rows[0]!) : null;
 }
 
-export function setItemAvailability(id: string, isAvailable: boolean, db: DB = getDb()): void {
-  db.prepare("UPDATE menu_items SET is_available = ? WHERE id = ?").run(toInt(isAvailable), id);
-}
-
-export function updateMenuItem(
+export async function setItemAvailability(
   id: string,
-  patch: Partial<Pick<MenuItem, "name" | "description" | "price" | "isVeg" | "isAvailable" | "badge">>,
-  db: DB = getDb(),
-): void {
-  const sets: string[] = [];
-  const values: Array<string | number | null> = [];
-
-  if (patch.name !== undefined) {
-    sets.push("name = ?");
-    values.push(patch.name);
-  }
-  if (patch.description !== undefined) {
-    sets.push("description = ?");
-    values.push(patch.description);
-  }
-  if (patch.price !== undefined) {
-    sets.push("price = ?");
-    values.push(patch.price);
-  }
-  if (patch.badge !== undefined) {
-    sets.push("badge = ?");
-    values.push(patch.badge);
-  }
-  if (patch.isVeg !== undefined) {
-    sets.push("is_veg = ?");
-    values.push(toInt(patch.isVeg));
-  }
-  if (patch.isAvailable !== undefined) {
-    sets.push("is_available = ?");
-    values.push(toInt(patch.isAvailable));
-  }
-
-  if (sets.length === 0) return;
-
-  values.push(id);
-  db.prepare(`UPDATE menu_items SET ${sets.join(", ")} WHERE id = ?`).run(...values);
+  isAvailable: boolean,
+  sql: DB = getDb(),
+): Promise<void> {
+  await sql`UPDATE menu_items SET is_available = ${isAvailable} WHERE id = ${id}`;
 }
 
-export function listCategories(restaurantId: string, db: DB = getDb()): Category[] {
-  return db
-    .prepare<[string], CategoryRow>(
-      "SELECT * FROM categories WHERE restaurant_id = ? ORDER BY sort_order, name",
-    )
-    .all(restaurantId)
-    .map(toCategory);
+export async function updateMenuItem(
+  id: string,
+  patch: Partial<
+    Pick<MenuItem, "name" | "description" | "price" | "isVeg" | "isAvailable" | "badge">
+  >,
+  sql: DB = getDb(),
+): Promise<void> {
+  const columns: Record<string, string | number | boolean | null> = {};
+  if (patch.name !== undefined) columns.name = patch.name;
+  if (patch.description !== undefined) columns.description = patch.description;
+  if (patch.price !== undefined) columns.price = patch.price;
+  if (patch.badge !== undefined) columns.badge = patch.badge;
+  if (patch.isVeg !== undefined) columns.is_veg = patch.isVeg;
+  if (patch.isAvailable !== undefined) columns.is_available = patch.isAvailable;
+
+  if (Object.keys(columns).length === 0) return;
+
+  await sql`UPDATE menu_items SET ${sql(columns)} WHERE id = ${id}`;
+}
+
+export async function listCategories(
+  restaurantId: string,
+  sql: DB = getDb(),
+): Promise<Category[]> {
+  const rows = await sql<CategoryRow[]>`
+    SELECT * FROM categories WHERE restaurant_id = ${restaurantId} ORDER BY sort_order, name
+  `;
+  return rows.map(toCategory);
 }

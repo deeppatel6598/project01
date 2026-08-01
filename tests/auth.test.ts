@@ -1,8 +1,7 @@
-import { describe, expect, it } from "vitest";
+import { afterAll, beforeEach, describe, expect, it } from "vitest";
 
 import { authenticate, createStaffMember, hashPassword, verifyPassword } from "@/lib/auth";
-import { createTestDb } from "@/lib/db";
-import { seed } from "@/lib/seed";
+import { closeTestDb, makeFixture, type Fixture } from "./helpers";
 
 describe("password hashing", () => {
   it("verifies a correct password", () => {
@@ -37,37 +36,37 @@ describe("password hashing", () => {
   });
 });
 
+let f: Fixture;
+
+beforeEach(async () => {
+  f = await makeFixture();
+});
+
+afterAll(async () => {
+  await closeTestDb();
+});
+
 describe("authenticate", () => {
-  it("returns the staff member on a correct pair", () => {
-    const db = createTestDb();
-    seed({}, db);
-    const restaurant = db.prepare<[], { id: string }>("SELECT id FROM restaurants").get()!;
+  it("returns the staff member on a correct pair", async () => {
+    await createStaffMember(f.restaurant.id, "Owner@Example.com", "correct horse", "owner", f.db);
 
-    createStaffMember(restaurant.id, "Owner@Example.com", "correct horse", "owner", db);
-
-    const staff = authenticate("owner@example.com", "correct horse", db);
+    const staff = await authenticate("owner@example.com", "correct horse", f.db);
     expect(staff?.role).toBe("owner");
     // Email is normalised on both write and read, so case cannot fork an
     // account.
     expect(staff?.email).toBe("owner@example.com");
   });
 
-  it("returns null for a wrong password", () => {
-    const db = createTestDb();
-    seed({}, db);
-    const restaurant = db.prepare<[], { id: string }>("SELECT id FROM restaurants").get()!;
-    createStaffMember(restaurant.id, "owner@example.com", "correct horse", "owner", db);
+  it("returns null for a wrong password", async () => {
+    await createStaffMember(f.restaurant.id, "owner@example.com", "correct horse", "owner", f.db);
 
-    expect(authenticate("owner@example.com", "wrong horse", db)).toBeNull();
+    expect(await authenticate("owner@example.com", "wrong horse", f.db)).toBeNull();
   });
 
-  it("returns null for an unknown email without leaking that it is unknown", () => {
-    const db = createTestDb();
-    seed({}, db);
-
+  it("returns null for an unknown email without leaking that it is unknown", async () => {
     // The observable result is identical to a wrong password, and the
     // implementation burns the same scrypt work — so this cannot be used to
     // enumerate staff accounts.
-    expect(authenticate("nobody@example.com", "anything", db)).toBeNull();
+    expect(await authenticate("nobody@example.com", "anything", f.db)).toBeNull();
   });
 });

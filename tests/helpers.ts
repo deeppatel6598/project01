@@ -1,15 +1,42 @@
-import { createTestDb, type DB } from "@/lib/db";
+import { createTestDb, migrate, type DB } from "@/lib/db";
 import { getGuestMenu, getRestaurant } from "@/lib/menu";
 import { seed } from "@/lib/seed";
 import type { MenuItem, Restaurant } from "@/lib/types";
 
 /**
- * A fresh in-memory database seeded with the pilot data, per test.
+ * The test harness runs against a **real Postgres**, not a mock or an
+ * in-memory shim.
  *
- * Every suite gets its own — SQLite's `:memory:` is scoped to the connection,
- * so tests cannot leak state into each other however they are ordered or
- * parallelised.
+ * The order engine leans on things only a real server provides — transaction
+ * rollback, `ON CONFLICT DO UPDATE` row locks, `ANY($1)` array binding, the
+ * `RETURNING` clauses that make the status transitions race-safe. A fake would
+ * pass while the production behaviour diverged, which is worse than no test.
+ *
+ * Point `TEST_DATABASE_URL` at any throwaway database:
+ *
+ *   docker run -e POSTGRES_HOST_AUTH_METHOD=trust -p 5433:5432 -d postgres:16
+ *   TEST_DATABASE_URL=postgres://postgres@127.0.0.1:5433/postgres npm test
  */
+
+const TEST_URL =
+  process.env.TEST_DATABASE_URL ?? "postgres://postgres@127.0.0.1:5433/tablekit";
+
+let shared: DB | null = null;
+
+/** One connection for the whole file; the schema is created once. */
+export async function testDb(): Promise<DB> {
+  if (!shared) {
+    shared = createTestDb(TEST_URL);
+    await migrate(shared);
+  }
+  return shared;
+}
+
+export async function closeTestDb(): Promise<void> {
+  await shared?.end();
+  shared = null;
+}
+
 export interface Fixture {
   db: DB;
   restaurant: Restaurant;
@@ -23,22 +50,28 @@ export interface Fixture {
   soldOutItem: MenuItem;
 }
 
-export function makeFixture(): Fixture {
-  const db = createTestDb();
-  const result = seed({}, db);
+/**
+ * A clean, freshly seeded database.
+ *
+ * Truncating and re-seeding rather than creating a database per test: it is an
+ * order of magnitude faster, and `RESTART IDENTITY CASCADE` leaves exactly the
+ * same starting state, so tests still cannot leak into each other.
+ */
+export async function makeFixture(): Promise<Fixture> {
+  const db = await testDb();
 
-  const restaurant = getRestaurant(db);
-  const items = getGuestMenu(restaurant.id, db).flatMap((section) => section.items);
+  await db`TRUNCATE order_items, orders, order_counters, guest_orders_log,
+                    menu_items, categories, dining_tables, staff_members, restaurants
+           RESTART IDENTITY CASCADE`;
 
-  const soldOutRow = db
-    .prepare<[], { id: string }>("SELECT id FROM menu_items WHERE is_available = 0 LIMIT 1")
-    .get();
+  const result = await seed({}, db);
+  const restaurant = await getRestaurant(db);
+  const sections = await getGuestMenu(restaurant.id, db);
+  const items = sections.flatMap((section) => section.items);
 
-  const soldOutItem = db
-    .prepare<[string], { id: string; name: string; price: number }>(
-      "SELECT id, name, price FROM menu_items WHERE id = ?",
-    )
-    .get(soldOutRow!.id)!;
+  const [soldOut] = await db<
+    { id: string; name: string; price: number }[]
+  >`SELECT id, name, price FROM menu_items WHERE is_available = false LIMIT 1`;
 
   return {
     db,
@@ -46,6 +79,6 @@ export function makeFixture(): Fixture {
     tableCodes: result.tables.map((table) => table.code),
     items,
     item: items[0]!,
-    soldOutItem: soldOutItem as unknown as MenuItem,
+    soldOutItem: soldOut as unknown as MenuItem,
   };
 }

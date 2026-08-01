@@ -1,0 +1,67 @@
+# Netlify configuration.
+#
+# The Next.js runtime is what turns this into a working deploy rather than a
+# folder of static files: it routes server components, API routes and server
+# actions through Netlify Functions. Without it Netlify publishes raw build
+# output and the site renders as unstyled fragments.
+
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+[build.environment]
+  # Next 16 needs a modern Node; Netlify's default lags behind.
+  NODE_VERSION = "22"
+
+  # Functions cannot hold an SSE connection open, so the kitchen board skips
+  # the stream entirely here and runs on its 20s reconciling poll — the mode it
+  # was built to survive. Without this, EventSource would retry forever and
+  # burn a function invocation every few seconds for nothing.
+  NEXT_PUBLIC_TABLEKIT_STREAM = "off"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
+# ── required environment variables ──────────────────────────────────────────
+#
+# Set these under Site configuration → Environment variables. They are not in
+# this file on purpose — it is committed to the repository.
+#
+#   DATABASE_URL            Supabase → Project Settings → Database →
+#                           Connection string → **Transaction pooler**
+#                           (port 6543). The session pooler and the direct
+#                           connection both exhaust their connection budget
+#                           under serverless; the transaction pooler is the
+#                           one built for it.
+#
+#   TABLEKIT_SECRET         openssl rand -base64 32
+#                           Signs staff session cookies and keys the IP hash
+#                           in the rate-limit log. The app refuses to boot in
+#                           production without it.
+#
+#   TABLEKIT_PUBLIC_ORIGIN  https://<your-site>.netlify.app
+#                           The origin printed into QR codes. Without it the
+#                           codes are built from the request Host header,
+#                           which behind Netlify's proxy is not always the
+#                           address a guest's phone can reach.
+#
+# See docs/DEPLOYMENT.md for the full walkthrough.
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=()"
+
+# The guest menu is per-table and must never be cached at the edge — an item
+# going sold out has to take effect on the next load.
+[[headers]]
+  for = "/t/*"
+  [headers.values]
+    Cache-Control = "no-store"
+
+[[headers]]
+  for = "/api/*"
+  [headers.values]
+    Cache-Control = "no-store"

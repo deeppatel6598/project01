@@ -40,9 +40,8 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# tablekit — the SQLite database and its WAL sidecars are runtime state,
-# not source. Recreate with `npm run seed`.
-/data/
+# tablekit
+/.netlify/
 
 # ...but the example env file must be committed, so un-ignore it.
 !.env.example

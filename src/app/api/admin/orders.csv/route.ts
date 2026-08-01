@@ -44,8 +44,11 @@ export async function GET(request: Request) {
     const fromKey = url.searchParams.get("from") ?? today;
     const toKey = url.searchParams.get("to") ?? today;
 
-    const restaurant = getRestaurant();
-    const orders = getOrderHistory(restaurant.id, { ...dayRange(fromKey, toKey), limit: 2000 });
+    const restaurant = await getRestaurant();
+    const orders = await getOrderHistory(restaurant.id, {
+      ...dayRange(fromKey, toKey),
+      limit: 2000,
+    });
 
     const header = [
       "order_code",

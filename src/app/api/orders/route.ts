@@ -46,7 +46,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const { order, publicToken } = placeOrder({
+    const { order, publicToken } = await placeOrder({
       tableCode: parsed.data.tableCode,
       guestName: parsed.data.guestName,
       guestPhone: parsed.data.guestPhone ?? null,
