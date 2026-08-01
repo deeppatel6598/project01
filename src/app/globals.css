@@ -1,0 +1,498 @@
+@import "tailwindcss";
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Modernist — design-system tokens.
+
+   Ported verbatim from the Claude Design project's
+   `_ds/modernist/styles.css`. This block is the source of truth for the
+   look: flat, architectural, set entirely in Archivo, near-mono red on
+   white, visible modular grid, zero corner radius, strong 2px rules.
+
+   Retune here — never hard-code a hex, a font name, or a px value that a
+   token already carries.
+   ══════════════════════════════════════════════════════════════════════ */
+
+@theme {
+  --color-bg: #f3f2f2;
+  --color-surface: #eae9e9;
+  --color-text: #201e1d;
+  --color-accent: #ec3013;
+  --color-divider: color-mix(in srgb, #201e1d 40%, transparent);
+
+  /* Tonal ramps — generated in OKLCH on one shared lightness scale, so the
+     same step of any role matches the others in visual value. */
+  --color-neutral-100: #f8f4f4;
+  --color-neutral-200: #eae7e7;
+  --color-neutral-300: #d7d3d3;
+  --color-neutral-400: #bab6b6;
+  --color-neutral-500: #9b9797;
+  --color-neutral-600: #7d7979;
+  --color-neutral-700: #605d5d;
+  --color-neutral-800: #444141;
+  --color-neutral-900: #2d2b2b;
+
+  --color-accent-100: #fff2ef;
+  --color-accent-200: #ffe0d9;
+  --color-accent-300: #ffc4b8;
+  --color-accent-400: #ff9783;
+  --color-accent-500: #ff563c;
+  --color-accent-600: #dd2b0f;
+  --color-accent-700: #ae1800;
+  --color-accent-800: #7c1405;
+  --color-accent-900: #4d170e;
+
+  /* The veg/non-veg FSSAI dot and the polling state are the only colors
+     outside the mono scheme — they are regulatory / status signals, not
+     brand. */
+  --color-veg: #47584a;
+  --color-nonveg: #9e3526;
+  --color-polling: #d4a24c;
+
+  --font-heading: var(--font-archivo), system-ui, sans-serif;
+  --font-body: var(--font-archivo), system-ui, sans-serif;
+  --font-heading-weight: 800;
+
+  --spacing-1: 4px;
+  --spacing-2: 8px;
+  --spacing-3: 12px;
+  --spacing-4: 16px;
+  --spacing-6: 24px;
+  --spacing-8: 32px;
+
+  --radius-sm: 0px;
+  --radius-md: 0px;
+  --radius-lg: 0px;
+
+  /* Elevation — derived from the ground: soft ink-tinted shadows on a
+     light theme, a hairline edge + ambient darkness on a dark one. */
+  --shadow-sm: 0 1px 2px color-mix(in srgb, #2d2b2b 14%, transparent);
+  --shadow-md: 0 3px 10px color-mix(in srgb, #2d2b2b 16%, transparent);
+  --shadow-lg: 0 12px 32px color-mix(in srgb, #2d2b2b 22%, transparent);
+}
+
+/* The design markup addresses spacing as `var(--space-N)`. Tailwind v4 owns
+   the `--spacing-*` namespace, so alias the design's names onto it rather
+   than maintaining two scales that can drift. */
+:root {
+  --space-1: var(--spacing-1);
+  --space-2: var(--spacing-2);
+  --space-3: var(--spacing-3);
+  --space-4: var(--spacing-4);
+  --space-6: var(--spacing-6);
+  --space-8: var(--spacing-8);
+}
+
+/* ── base ──────────────────────────────────────────────────────────────── */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.55;
+  font-weight: 400;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-heading);
+  font-weight: var(--font-heading-weight);
+  line-height: 1.12;
+  letter-spacing: -0.015em;
+  margin: 0 0 var(--space-2);
+}
+
+h1 { font-size: 42px; }
+h2 { font-size: 32px; }
+h3 { font-size: 25px; }
+h4 { font-size: 20px; }
+h5 { font-size: 16px; }
+h6 { font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase; }
+
+p { margin: 0 0 var(--space-3); }
+
+a {
+  color: var(--color-accent-700);
+  text-underline-offset: 3px;
+}
+a:hover { color: var(--color-accent); }
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+/* Interaction states are themed, never browser defaults. */
+:focus { outline: none; }
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+::selection { background: color-mix(in srgb, var(--color-accent) 30%, transparent); }
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-thumb { background: var(--color-neutral-400); }
+
+/* On the dark pass board the accent ring sinks into the ink; step the ring
+   up the ramp so keyboard focus stays visible there too. */
+.on-dark :focus-visible { outline-color: var(--color-accent-400); }
+
+/* ── motion ────────────────────────────────────────────────────────────── */
+
+/* The single orchestrated moment: a new docket landing on the pass. */
+@keyframes docketIn {
+  from {
+    transform: translateY(-14px);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+
+.docket-in {
+  animation: docketIn 260ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ── imagery ───────────────────────────────────────────────────────────── */
+
+/* Every content photograph prints in pure black and white. */
+.grayscale-photo {
+  filter: grayscale(1) contrast(1.08);
+}
+
+/* ── the docket ────────────────────────────────────────────────────────── */
+
+/* The signature element. It appears in both surfaces — the guest's
+   confirmation is the same docket the kitchen sees, which is what tells the
+   guest their order really landed. Perforated top and bottom edge, drawn
+   with a repeating radial-gradient so it needs no image. */
+.docket {
+  position: relative;
+  background: var(--color-neutral-100);
+  color: var(--color-text);
+  border-left: 2px solid var(--color-text);
+  border-right: 2px solid var(--color-text);
+  padding: var(--space-4);
+}
+
+.docket::before,
+.docket::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 6px;
+  background-size: 10px 6px;
+}
+
+/* One circle per 10×6 tile, not a repeating gradient inside each tile —
+   `repeating-radial-gradient` draws concentric rings, which reads as a comb
+   of hairlines rather than a torn edge. A single stop per tile gives the
+   half-round scallops a perforated docket actually has. */
+.docket::before {
+  top: -6px;
+  background-image: radial-gradient(
+    circle at 5px 6px,
+    var(--color-neutral-100) 0 5px,
+    transparent 5.5px
+  );
+}
+
+.docket::after {
+  bottom: -6px;
+  background-image: radial-gradient(
+    circle at 5px 0,
+    var(--color-neutral-100) 0 5px,
+    transparent 5.5px
+  );
+}
+
+/* Status stamped at an angle, the way a pass clerk would hit it. */
+.stamp {
+  display: inline-block;
+  border: 2px solid var(--color-accent);
+  color: var(--color-accent);
+  font-family: var(--font-heading);
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  transform: rotate(-4deg);
+}
+
+/* ── labels ────────────────────────────────────────────────────────────── */
+
+/* The system's recurring small-caps utility label: wide tracking,
+   uppercase. Used for kickers, meta rows and field labels throughout. */
+.label {
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.label-tight { letter-spacing: 0.1em; }
+.label-wide { letter-spacing: 0.18em; }
+
+/* ── controls ──────────────────────────────────────────────────────────── */
+
+/* Button labels are flush left — a button wider than its label starts the
+   text at the left padding edge, never centered. */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  text-decoration: none;
+  appearance: none;
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  text-align: left;
+  border-radius: var(--radius-md);
+  /* 44px floor on every tap target. */
+  min-height: 44px;
+  padding: 0 var(--space-4);
+}
+
+.btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  border: 0;
+  background: var(--color-accent);
+  color: #fff;
+}
+.btn-primary:not(:disabled):hover { background: var(--color-accent-600); }
+.btn-primary:not(:disabled):active { background: var(--color-accent-700); }
+
+.btn-secondary {
+  border: 2px solid var(--color-text);
+  background: transparent;
+  color: var(--color-text);
+}
+.btn-secondary:not(:disabled):hover {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: #fff;
+}
+.btn-secondary:not(:disabled):active {
+  background: var(--color-accent-700);
+  border-color: var(--color-accent-700);
+  color: #fff;
+}
+
+/* The quiet variant — used where a secondary would shout, e.g. the close
+   buttons on the guest sheets. */
+.btn-quiet {
+  border: 2px solid var(--color-text);
+  background: transparent;
+  color: var(--color-text);
+}
+.btn-quiet:not(:disabled):hover { background: var(--color-accent-100); }
+.btn-quiet:not(:disabled):active { background: var(--color-accent-200); }
+
+.btn-icon {
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  justify-content: center;
+}
+
+.btn-block {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+}
+
+/* The stepper: −  qty  + inside one 2px rule. */
+.stepper {
+  display: inline-flex;
+  align-items: stretch;
+  border: 2px solid var(--color-text);
+}
+
+.stepper button {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: var(--color-text);
+  font-size: 16px;
+  font-weight: 700;
+  width: 44px;
+  min-height: 36px;
+  cursor: pointer;
+}
+.stepper button:hover { background: var(--color-accent-100); }
+.stepper button:disabled { opacity: 0.4; cursor: not-allowed; background: transparent; }
+
+.stepper .qty {
+  min-width: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-heading);
+  font-weight: 800;
+  font-size: 14px;
+  border-left: 2px solid var(--color-text);
+  border-right: 2px solid var(--color-text);
+}
+
+/* ── forms ─────────────────────────────────────────────────────────────── */
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field > span {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.input {
+  appearance: none;
+  width: 100%;
+  border: 2px solid var(--color-text);
+  border-radius: var(--radius-md);
+  background: transparent;
+  font-family: var(--font-body);
+  font-size: 15px;
+  color: var(--color-text);
+  caret-color: var(--color-accent);
+  padding: 12px;
+  min-height: 48px;
+}
+
+.input::placeholder { color: var(--color-neutral-600); }
+.input:hover { border-color: var(--color-accent-700); }
+.input:focus-visible { border-color: var(--color-accent); outline-offset: 0; }
+
+textarea.input {
+  min-height: 90px;
+  resize: vertical;
+}
+
+/* ── tags ──────────────────────────────────────────────────────────────── */
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  padding: 3px 6px;
+  border-radius: var(--radius-sm);
+}
+
+.tag-outline {
+  border: 1px solid var(--color-accent);
+  color: var(--color-accent-700);
+}
+
+.tag-neutral {
+  border: 1px solid var(--color-neutral-400);
+  color: var(--color-neutral-600);
+}
+
+/* ── tables ────────────────────────────────────────────────────────────── */
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.table th {
+  text-align: left;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-neutral-700);
+  padding: var(--space-2);
+  border-bottom: 2px solid var(--color-text);
+  white-space: nowrap;
+}
+
+.table td {
+  padding: var(--space-2);
+  border-bottom: 1px solid var(--color-divider);
+}
+
+.table tbody tr:hover { background: var(--color-accent-100); }
+
+/* ── rules ─────────────────────────────────────────────────────────────── */
+
+.hr {
+  height: 2px;
+  border: 0;
+  margin: var(--space-4) 0;
+  background: var(--color-text);
+}
+
+/* The dotted leader that runs from an item name to its price, the way a
+   printed menu sets it. */
+.leader {
+  flex: 1 1 auto;
+  border-bottom: 1px dotted var(--color-neutral-400);
+  transform: translateY(-4px);
+}
+
+.leader-solid {
+  flex: 1 1 auto;
+  border-bottom: 2px solid var(--color-text);
+  transform: translateY(-4px);
+}
+
+/* ── print ─────────────────────────────────────────────────────────────── */
+
+/* The QR sheet is the artifact that decides whether the system actually
+   gets onto tables, so it gets real print styles: A4, 6 up, no chrome. */
+@media print {
+  .no-print { display: none !important; }
+
+  body { background: #fff; }
+
+  @page {
+    size: A4;
+    margin: 12mm;
+  }
+
+  .qr-cell {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+}

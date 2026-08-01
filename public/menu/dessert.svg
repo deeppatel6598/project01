@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" role="img" aria-label="Dessert">
+  <rect width="200" height="200" fill="#d7d3d3"/>
+  <g transform="translate(100 100) scale(0.82) translate(-100 -100)">
+    <!-- cake slice, seen from the side -->
+    <path d="M40 156 100 56l60 100z" fill="none" stroke="#201e1d" stroke-width="9" stroke-linejoin="miter"/>
+    <!-- filling band -->
+    <path d="M64 116h72l14 24H50z" fill="#201e1d"/>
+    <!-- plate -->
+    <rect x="26" y="164" width="148" height="10" fill="#201e1d"/>
+    <!-- cherry -->
+    <circle cx="100" cy="42" r="13" fill="#201e1d"/>
+  </g>
+</svg>
