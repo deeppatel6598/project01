@@ -8,10 +8,6 @@ const nextConfig: NextConfig = {
     remotePatterns: [{ protocol: "https", hostname: "images.unsplash.com" }],
   },
 
-  // better-sqlite3 is a native addon. Telling Next to leave it external stops
-  // the bundler trying to trace and rewrite the .node binary.
-  serverExternalPackages: ["better-sqlite3"],
-
   async headers() {
     return [
       {

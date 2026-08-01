@@ -18,7 +18,7 @@ import { createTable, rotateTableCode, updateTable } from "@/lib/tables";
 
 export async function toggleItemAvailability(itemId: string, isAvailable: boolean): Promise<void> {
   await requireOwner();
-  setItemAvailability(itemId, isAvailable);
+  await setItemAvailability(itemId, isAvailable);
   // The guest menu is rendered per-request but revalidating keeps any cached
   // segment honest, which is what "disappears within one refresh" needs.
   revalidatePath("/admin/menu");
@@ -41,7 +41,7 @@ export async function saveItemPrice(_previous: FieldState, formData: FormData): 
     return { error: "Enter a price like 260 or 260.50.", ok: false };
   }
 
-  updateMenuItem(itemId, { price });
+  await updateMenuItem(itemId, { price });
   revalidatePath("/admin/menu");
   revalidatePath("/t/[code]", "page");
   return { error: null, ok: true };
@@ -56,8 +56,8 @@ export async function addTable(_previous: FieldState, formData: FormData): Promi
   const seatsRaw = String(formData.get("seats") ?? "").trim();
   const seats = seatsRaw === "" ? null : Number.parseInt(seatsRaw, 10);
 
-  const restaurant = getRestaurant();
-  createTable(restaurant.id, label, Number.isFinite(seats) ? seats : null);
+  const restaurant = await getRestaurant();
+  await createTable(restaurant.id, label, Number.isFinite(seats) ? seats : null);
 
   revalidatePath("/admin/tables");
   return { error: null, ok: true };
@@ -65,7 +65,7 @@ export async function addTable(_previous: FieldState, formData: FormData): Promi
 
 export async function setTableActive(tableId: string, isActive: boolean): Promise<void> {
   await requireOwner();
-  updateTable(tableId, { isActive });
+  await updateTable(tableId, { isActive });
   revalidatePath("/admin/tables");
 }
 
@@ -79,14 +79,14 @@ export async function setTableActive(tableId: string, isActive: boolean): Promis
  */
 export async function rotateCode(tableId: string): Promise<void> {
   await requireOwner();
-  rotateTableCode(tableId);
+  await rotateTableCode(tableId);
   revalidatePath("/admin/tables");
 }
 
 export async function setAcceptingOrders(isAccepting: boolean): Promise<void> {
   await requireOwner();
-  const restaurant = getRestaurant();
-  updateRestaurant(restaurant.id, { isAcceptingOrders: isAccepting });
+  const restaurant = await getRestaurant();
+  await updateRestaurant(restaurant.id, { isAcceptingOrders: isAccepting });
   revalidatePath("/admin");
   revalidatePath("/admin/settings");
   revalidatePath("/t/[code]", "page");
@@ -95,12 +95,12 @@ export async function setAcceptingOrders(isAccepting: boolean): Promise<void> {
 export async function saveSettings(_previous: FieldState, formData: FormData): Promise<FieldState> {
   await requireOwner();
 
-  const restaurant = getRestaurant();
+  const restaurant = await getRestaurant();
   const name = String(formData.get("name") ?? "").trim();
 
   if (!name) return { error: "The cafe needs a name.", ok: false };
 
-  updateRestaurant(restaurant.id, {
+  await updateRestaurant(restaurant.id, {
     name,
     address: String(formData.get("address") ?? "").trim(),
     phone: String(formData.get("phone") ?? "").trim(),

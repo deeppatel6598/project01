@@ -32,7 +32,11 @@ export async function POST(request: Request) {
       );
     }
 
-    const order = editOrderLine(parsed.data.token, parsed.data.menuItemId, parsed.data.delta);
+    const order = await editOrderLine(
+      parsed.data.token,
+      parsed.data.menuItemId,
+      parsed.data.delta,
+    );
 
     // `null` means the guest emptied the order, which cancels it rather than
     // leaving a zero-rupee docket on the pass.

@@ -28,7 +28,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   if (!session) redirect("/login?next=/admin");
   if (session.role !== "owner") redirect("/kitchen");
 
-  const restaurant = getRestaurant();
+  const restaurant = await getRestaurant();
 
   return (
     <div className="flex min-h-dvh flex-col">

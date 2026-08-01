@@ -11,8 +11,8 @@ export const dynamic = "force-dynamic";
 
 /** `/admin/tables` — the tables, their codes, and the QR artwork. */
 export default async function AdminTablesPage() {
-  const restaurant = getRestaurant();
-  const tables = listTables(restaurant.id);
+  const restaurant = await getRestaurant();
+  const tables = await listTables(restaurant.id);
   const origin = await publicOrigin();
 
   const rows = await Promise.all(

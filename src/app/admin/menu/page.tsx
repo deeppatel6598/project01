@@ -7,8 +7,8 @@ export const dynamic = "force-dynamic";
 
 /** `/admin/menu` — availability toggles and prices. */
 export default async function AdminMenuPage() {
-  const restaurant = getRestaurant();
-  const sections = getFullMenu(restaurant.id);
+  const restaurant = await getRestaurant();
+  const sections = await getFullMenu(restaurant.id);
 
   return (
     <div className="flex flex-col gap-6">

@@ -12,13 +12,15 @@ export const dynamic = "force-dynamic";
 
 /** `/admin` — today at a glance, and the kill switch. */
 export default async function AdminOverview() {
-  const restaurant = getRestaurant();
+  const restaurant = await getRestaurant();
   // A server component rendered per request (`dynamic = "force-dynamic"`),
   // not a client render the compiler has to keep pure.
   // eslint-disable-next-line react-hooks/purity
   const today = cafeDayKey(Date.now());
-  const stats = getDayStats(restaurant.id, today);
-  const live = getBoardOrders(restaurant.id);
+  const [stats, live] = await Promise.all([
+    getDayStats(restaurant.id, today),
+    getBoardOrders(restaurant.id),
+  ]);
 
   const open = live.filter((order) => order.status !== "served");
 

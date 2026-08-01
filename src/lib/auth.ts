@@ -166,12 +166,14 @@ export class AuthError extends Error {
 
 /* ── staff records ─────────────────────────────────────────────────────── */
 
-export function findStaffByEmail(email: string, db: DB = getDb()): StaffMemberRow | null {
-  return (
-    db
-      .prepare<[string], StaffMemberRow>("SELECT * FROM staff_members WHERE email = ?")
-      .get(email.trim().toLowerCase()) ?? null
-  );
+export async function findStaffByEmail(
+  email: string,
+  sql: DB = getDb(),
+): Promise<StaffMemberRow | null> {
+  const [row] = await sql<StaffMemberRow[]>`
+    SELECT * FROM staff_members WHERE email = ${email.trim().toLowerCase()}
+  `;
+  return row ?? null;
 }
 
 /**
@@ -181,8 +183,12 @@ export function findStaffByEmail(email: string, db: DB = getDb()): StaffMemberRo
  * value. Returning early would make "no such user" measurably faster than
  * "wrong password", which is how you enumerate a staff list.
  */
-export function authenticate(email: string, password: string, db: DB = getDb()): StaffMember | null {
-  const row = findStaffByEmail(email, db);
+export async function authenticate(
+  email: string,
+  password: string,
+  sql: DB = getDb(),
+): Promise<StaffMember | null> {
+  const row = await findStaffByEmail(email, sql);
 
   if (!row) {
     verifyPassword(password, hashPassword("timing-equalizer"));
@@ -192,13 +198,13 @@ export function authenticate(email: string, password: string, db: DB = getDb()):
   return verifyPassword(password, row.password_hash) ? toStaffMember(row) : null;
 }
 
-export function createStaffMember(
+export async function createStaffMember(
   restaurantId: string,
   email: string,
   password: string,
   role: StaffRole,
-  db: DB = getDb(),
-): StaffMember {
+  sql: DB = getDb(),
+): Promise<StaffMember> {
   const staff = {
     id: generateId(),
     restaurantId,
@@ -206,10 +212,11 @@ export function createStaffMember(
     role,
   };
 
-  db.prepare(
-    `INSERT INTO staff_members (id, restaurant_id, email, password_hash, role, created_at)
-     VALUES (?, ?, ?, ?, ?, ?)`,
-  ).run(staff.id, staff.restaurantId, staff.email, hashPassword(password), staff.role, Date.now());
+  await sql`
+    INSERT INTO staff_members (id, restaurant_id, email, password_hash, role)
+    VALUES (${staff.id}, ${staff.restaurantId}, ${staff.email},
+            ${hashPassword(password)}, ${staff.role})
+  `;
 
   return staff;
 }

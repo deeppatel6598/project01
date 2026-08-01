@@ -15,13 +15,25 @@ import type {
  * meet. Everything above this file speaks the domain types; everything below
  * it speaks SQL.
  *
- * SQLite has no boolean type, so `0`/`1` integers are converted here rather
- * than leaking truthiness bugs into the UI — `is_available = 0` is falsy by
- * accident, but `isAvailable === false` is falsy on purpose.
+ * Two conversions happen here and nowhere else:
+ *
+ *   * **Timestamps.** Postgres hands back `Date` objects for `timestamptz`.
+ *     The domain — and the JSON the browser receives — uses epoch
+ *     milliseconds, one integer both ends agree on with no parser between
+ *     them.
+ *   * **Booleans.** Real booleans now, where SQLite had 0/1. The guard below
+ *     accepts either, so a database created by the old SQLite schema still
+ *     maps correctly if anyone points the code at one.
  */
 
-const bool = (value: number): boolean => value === 1;
-export const toInt = (value: boolean): 0 | 1 => (value ? 1 : 0);
+const bool = (value: boolean | number): boolean => value === true || value === 1;
+
+/** Epoch milliseconds from whatever the driver returned. */
+const ms = (value: Date | string | number): number =>
+  value instanceof Date ? value.getTime() : new Date(value).getTime();
+
+const msOrNull = (value: Date | string | number | null): number | null =>
+  value === null ? null : ms(value);
 
 export interface RestaurantRow {
   id: string;
@@ -33,7 +45,7 @@ export interface RestaurantRow {
   logo_url: string | null;
   hero_image_url: string | null;
   hours_label: string;
-  is_accepting_orders: number;
+  is_accepting_orders: boolean;
 }
 
 export function toRestaurant(row: RestaurantRow): Restaurant {
@@ -57,7 +69,7 @@ export interface DiningTableRow {
   label: string;
   code: string;
   seats: number | null;
-  is_active: number;
+  is_active: boolean;
 }
 
 export function toDiningTable(row: DiningTableRow): DiningTable {
@@ -76,7 +88,7 @@ export interface CategoryRow {
   restaurant_id: string;
   name: string;
   sort_order: number;
-  is_active: number;
+  is_active: boolean;
 }
 
 export function toCategory(row: CategoryRow): Category {
@@ -98,8 +110,8 @@ export interface MenuItemRow {
   price: number;
   image_url: string | null;
   badge: string | null;
-  is_veg: number;
-  is_available: number;
+  is_veg: boolean;
+  is_available: boolean;
   sort_order: number;
 }
 
@@ -132,9 +144,9 @@ export interface OrderRow {
   subtotal: number;
   total: number;
   public_token: string;
-  placed_at: number;
-  accepted_at: number | null;
-  served_at: number | null;
+  placed_at: Date;
+  accepted_at: Date | null;
+  served_at: Date | null;
 }
 
 export interface OrderItemRow {
@@ -174,9 +186,9 @@ export function toOrder(row: OrderRow, lines: OrderItemRow[]): Order {
     status: row.status,
     subtotal: row.subtotal,
     total: row.total,
-    placedAt: row.placed_at,
-    acceptedAt: row.accepted_at,
-    servedAt: row.served_at,
+    placedAt: ms(row.placed_at),
+    acceptedAt: msOrNull(row.accepted_at),
+    servedAt: msOrNull(row.served_at),
     lines: lines.map(toOrderLine),
   };
 }

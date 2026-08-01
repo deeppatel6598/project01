@@ -29,6 +29,18 @@ const POLL_MS = 20_000;
 /** Treat the board as stale if nothing has landed in this long. */
 const STALE_MS = 45_000;
 
+/**
+ * Whether to attempt the SSE stream at all.
+ *
+ * Serverless functions cannot hold a connection open for more than a few
+ * seconds, so on Netlify or Vercel `EventSource` would fail, reconnect, fail
+ * again — a retry loop that burns a function invocation every few seconds and
+ * never succeeds. `NEXT_PUBLIC_TABLEKIT_STREAM=off` turns it off at build
+ * time, and the board runs on its reconciling poll alone, which is exactly the
+ * mode it was already designed to survive.
+ */
+const STREAM_ENABLED = process.env.NEXT_PUBLIC_TABLEKIT_STREAM !== "off";
+
 export interface UseLiveOrders {
   orders: Order[];
   connection: ConnectionState;
@@ -119,6 +131,11 @@ export function useLiveOrders(onNewOrder?: () => void): UseLiveOrders {
   /* ── the stream ──────────────────────────────────────────────────────── */
 
   useEffect(() => {
+    // Nothing to set up, and nothing to correct: the connection state already
+    // starts at "polling", and the poll's own `settleConnection` keeps it
+    // honest from there.
+    if (!STREAM_ENABLED) return;
+
     let source: EventSource | null = null;
     let cancelled = false;
 

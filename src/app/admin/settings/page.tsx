@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 
 /** `/admin/settings` — cafe details and the accepting-orders kill switch. */
 export default async function AdminSettingsPage() {
-  const restaurant = getRestaurant();
+  const restaurant = await getRestaurant();
 
   return (
     <div className="flex max-w-2xl flex-col gap-6">

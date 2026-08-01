@@ -31,7 +31,7 @@ export async function POST(request: Request) {
     }
 
     return NextResponse.json(
-      { orders: getGuestOrders(parsed.data.tokens) },
+      { orders: await getGuestOrders(parsed.data.tokens) },
       { headers: NO_STORE },
     );
   } catch (error) {

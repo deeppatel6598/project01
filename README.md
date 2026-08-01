@@ -17,8 +17,16 @@ stubbed.
 
 ```bash
 npm install
-npm run seed     # creates the pilot data and prints the table codes
+cp .env.example .env.local     # fill in DATABASE_URL — see docs/DEPLOYMENT.md
+npm run seed                   # creates the schema, pilot data, and table codes
 npm run dev
+```
+
+Any Postgres works for local development:
+
+```bash
+docker run -e POSTGRES_HOST_AUTH_METHOD=trust -p 5433:5432 -d postgres:16
+export DATABASE_URL=postgres://postgres@127.0.0.1:5433/postgres DATABASE_SSL=disable
 ```
 
 Then open:
@@ -43,7 +51,7 @@ npm run build          # production build
 npm start              # serve the production build
 npm run seed           # seed pilot data (idempotent — safe to re-run)
 npm run seed:reset     # wipe and re-seed; DESTROYS order history and rotates every table code
-npm test               # vitest
+npm test               # vitest (needs TEST_DATABASE_URL — a real Postgres)
 npm run test:coverage  # with coverage
 npm run typecheck      # tsc --noEmit
 npm run lint           # eslint
@@ -52,16 +60,20 @@ npm run verify         # typecheck + lint + test + build
 
 ## Stack
 
-Next.js 16 (App Router) · React 19 · TypeScript · Tailwind v4 · SQLite
-(better-sqlite3) · SSE for realtime.
+Next.js 16 (App Router) · React 19 · TypeScript · Tailwind v4 · **Postgres**
+(Supabase) · deployed on **Netlify**.
 
-The brief named Supabase and Netlify. This repo ships a **runnable**
-single-process implementation instead: `npm install && npm run seed && npm run
-dev` gives you a working cafe with no accounts to create and no credentials to
-paste. The Postgres path is not abandoned —
-`supabase/migrations/0001_init.sql` contains the full schema, the RLS policies,
-and a `place_order` function that enforces the same rules as
-`src/lib/orders.ts`. See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) for the swap.
+The data layer talks to Postgres through the `postgres` driver over Supabase's
+**transaction pooler**, which is what makes it work on serverless — the direct
+connection is IPv6-only and unreachable from a Netlify Function, and the
+session pooler exhausts its pool under cold starts. The app checks this at
+startup and refuses to boot with a clear message rather than half-working.
+
+Realtime is the one thing serverless costs you: functions cannot hold an SSE
+connection open, so on Netlify the board runs on its 20-second reconciling
+poll and the connection dot reads amber rather than green. On a long-lived
+Node process the stream works as built. Both paths are covered in
+[docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
 
 ---
 
@@ -86,7 +98,7 @@ src/
     use-chime            new-order sound, behind the autoplay gesture
   lib/
     orders.ts            the order engine — read this one first
-    db/                  schema, connection, row mappers
+    db/                  schema, pooled connection, row mappers
     money.ts             integer paise; never a float
     copy.ts              every user-facing string, for the v2 translation
 ```
