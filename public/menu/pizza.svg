@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" role="img" aria-label="Pizza">
+  <rect width="200" height="200" fill="#d7d3d3"/>
+  <g transform="translate(100 100) scale(0.82) translate(-100 -100)">
+    <!-- Seen from above rather than as a wedge: at 76px a circle with a cut
+         slice reads as pizza instantly, where a side-on wedge reads as a
+         triangle on a bar. -->
+    <circle cx="100" cy="100" r="82" fill="none" stroke="#201e1d" stroke-width="11"/>
+    <circle cx="100" cy="100" r="64" fill="none" stroke="#201e1d" stroke-width="5"/>
+    <!-- the cut slice, lifted out -->
+    <path d="M100 100 158 141a68 68 0 0 1-58 33z" fill="#201e1d"/>
+    <!-- toppings -->
+    <g fill="#201e1d">
+      <circle cx="100" cy="56" r="12"/>
+      <circle cx="62" cy="104" r="12"/>
+      <circle cx="132" cy="76" r="10"/>
+      <circle cx="74" cy="148" r="10"/>
+    </g>
+  </g>
+</svg>

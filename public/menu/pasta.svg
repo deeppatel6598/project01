@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" role="img" aria-label="Pasta">
+  <rect width="200" height="200" fill="#d7d3d3"/>
+  <g transform="translate(100 100) scale(0.82) translate(-100 -100)">
+    <!-- strands -->
+    <g fill="none" stroke="#201e1d" stroke-width="7" stroke-linecap="round">
+      <path d="M60 96c0-26 12-40 24-40s24 14 24 40"/>
+      <path d="M84 96c0-30 14-46 28-46s26 16 26 46"/>
+      <path d="M40 96c0-22 10-34 20-34s20 12 20 34"/>
+    </g>
+    <!-- bowl -->
+    <path d="M26 100h148a74 74 0 0 1-74 74 74 74 0 0 1-74-74z" fill="#201e1d"/>
+    <rect x="26" y="92" width="148" height="10" fill="#201e1d"/>
+  </g>
+</svg>

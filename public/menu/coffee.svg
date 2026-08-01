@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" role="img" aria-label="Coffee">
+  <!-- Modernist menu art: flat geometry, ink on ground, no gradients, no
+       rounded corners beyond what the object itself has. Drawn rather than
+       photographed so the menu renders with zero external requests. -->
+  <rect width="200" height="200" fill="#d7d3d3"/>
+  <g transform="translate(100 100) scale(0.82) translate(-100 -100)">
+    <g fill="none" stroke="#201e1d" stroke-width="7" stroke-linecap="square">
+      <path d="M84 42v22M100 34v30M116 42v22"/>
+    </g>
+    <path d="M46 84h108v34a48 48 0 0 1-48 48h-12a48 48 0 0 1-48-48z" fill="#201e1d"/>
+    <path d="M154 96h14a22 22 0 0 1 0 44h-14" fill="none" stroke="#201e1d" stroke-width="9"/>
+    <rect x="34" y="176" width="132" height="9" fill="#201e1d"/>
+  </g>
+</svg>
