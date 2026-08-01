@@ -4,16 +4,22 @@ import { useEffect, useRef, useState } from "react";
 
 import { Thumb } from "@/components/thumb";
 import { Leader, Numeral, Stepper, VegDot } from "@/components/ui";
-import { copy } from "@/lib/copy";
 import { categoryAnchor } from "@/lib/anchors";
+import { copy } from "@/lib/copy";
 import { formatINR } from "@/lib/money";
 import type { Cart, MenuSection } from "@/lib/types";
 
 /**
- * The menu, set as a printed menu board: rows with dotted leaders running to
- * the price, not a grid of cards. Most cafes do not have a photograph of
- * everything, and a half-populated card grid looks broken in a way a row list
- * never does.
+ * The menu.
+ *
+ * Each dish sits on its own warm card with its photograph in a rounded frame,
+ * but the dotted leader running from the name to the price is kept — it is the
+ * one piece of printed-menu grammar that makes a list of items read as a menu
+ * rather than as a table of data.
+ *
+ * Cards rather than a grid, because most cafes will not have a photograph of
+ * everything: a card without an image still reads as a card, where a
+ * half-populated photo grid reads as broken.
  */
 
 const ROMAN = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII"];
@@ -31,27 +37,22 @@ export function MenuBoard({
   accepting: boolean;
   onIncrement: (itemId: string) => void;
   onDecrement: (itemId: string) => void;
-  /** The scrolling element the rail spies on. */
   scrollRoot?: React.RefObject<HTMLElement | null>;
 }) {
   const [activeAnchor, setActiveAnchor] = useState<string | null>(
     sections[0] ? categoryAnchor(sections[0].category) : null,
   );
 
-  const anchors = sections.map((section) => categoryAnchor(section.category));
-  const anchorKey = anchors.join("|");
+  const anchorKey = sections.map((section) => categoryAnchor(section.category)).join("|");
 
   /**
-   * Scroll-spy.
+   * Scroll-spy via IntersectionObserver rather than a scroll handler calling
+   * `getBoundingClientRect` every frame — the browser computes intersections
+   * off the main thread, so dragging a long menu on a mid-range Android stays
+   * smooth.
    *
-   * Tracked with an IntersectionObserver rather than a scroll handler doing
-   * `getBoundingClientRect` on every frame: the browser computes the
-   * intersections off the main thread, so dragging through a long menu on a
-   * mid-range Android stays smooth.
-   *
-   * The `rootMargin` pulls the detection line down to just below the sticky
-   * rail, so the highlighted category is the one actually under the rail
-   * rather than the one about to leave the top of the screen.
+   * `rootMargin` pulls the detection line below the sticky rail, so the
+   * highlighted chip is the section actually under it.
    */
   useEffect(() => {
     const root = scrollRoot?.current ?? null;
@@ -71,7 +72,6 @@ export function MenuBoard({
           else visible.delete(entry.target.id);
         }
 
-        // Whichever visible section starts highest on screen wins.
         let best: string | null = null;
         let bestTop = Number.POSITIVE_INFINITY;
         for (const [id, top] of visible) {
@@ -82,16 +82,16 @@ export function MenuBoard({
         }
         if (best) setActiveAnchor(best);
       },
-      { root, rootMargin: "-52px 0px -70% 0px", threshold: 0 },
+      { root, rootMargin: "-76px 0px -68% 0px", threshold: 0 },
     );
 
     for (const element of elements) observer.observe(element);
     return () => observer.disconnect();
   }, [anchorKey, scrollRoot]);
 
-  // Left for the React Compiler to memoize. Wrapping it in `useCallback`
-  // here reads a ref inside the dependency list, which makes the compiler
-  // bail out of optimising this component entirely.
+  // Left for the React Compiler to memoize — wrapping this in `useCallback`
+  // would read a ref in the dependency list and make the compiler bail out of
+  // optimising this component entirely.
   const jumpTo = (anchor: string) => {
     const element = document.getElementById(anchor);
     if (!element) return;
@@ -100,9 +100,7 @@ export function MenuBoard({
 
     const root = scrollRoot?.current;
     if (root) {
-      // Offset by the rail's height so the section heading is not hidden
-      // underneath it.
-      root.scrollTo({ top: element.offsetTop - 44, behavior: "smooth" });
+      root.scrollTo({ top: element.offsetTop - 76, behavior: "smooth" });
     } else {
       element.scrollIntoView({ behavior: "smooth", block: "start" });
     }
@@ -110,56 +108,45 @@ export function MenuBoard({
 
   return (
     <>
-      <CategoryRail
-        sections={sections}
-        activeAnchor={activeAnchor}
-        onJump={jumpTo}
-      />
+      <CategoryRail sections={sections} activeAnchor={activeAnchor} onJump={jumpTo} />
 
-      {sections.map((section, index) => (
-        <section
-          key={section.category.id}
-          id={categoryAnchor(section.category)}
-          className="px-4 pt-6 pb-4"
-          style={{ borderBottom: "2px solid var(--color-text)" }}
-          aria-labelledby={`${categoryAnchor(section.category)}-heading`}
-        >
-          <div className="mb-4 flex items-baseline gap-[10px]">
-            <Numeral>{ROMAN[index] ?? String(index + 1)}</Numeral>
-            <h2
-              id={`${categoryAnchor(section.category)}-heading`}
-              className="m-0"
-              style={{
-                fontFamily: "var(--font-heading)",
-                fontWeight: 900,
-                fontSize: 15,
-                letterSpacing: "0.16em",
-                textTransform: "uppercase",
-              }}
-            >
-              {section.category.name}
-            </h2>
-            <Leader solid />
-            <span
-              className="label label-tight"
-              style={{ fontSize: 10, color: "var(--color-neutral-600)" }}
-            >
-              {copy.guest.categoryCount(section.items.length)}
-            </span>
-          </div>
+      <div className="flex flex-col gap-8 px-4 pt-6">
+        {sections.map((section, index) => (
+          <section
+            key={section.category.id}
+            id={categoryAnchor(section.category)}
+            aria-labelledby={`${categoryAnchor(section.category)}-heading`}
+          >
+            <div className="mb-4 flex items-center gap-3">
+              <Numeral>{ROMAN[index] ?? String(index + 1)}</Numeral>
+              <h2
+                id={`${categoryAnchor(section.category)}-heading`}
+                className="m-0"
+                style={{ fontSize: 22 }}
+              >
+                {section.category.name}
+              </h2>
+              <span className="rule-warm flex-1" aria-hidden />
+              <span className="label" style={{ color: "var(--color-text-faint)" }}>
+                {copy.guest.categoryCount(section.items.length)}
+              </span>
+            </div>
 
-          {section.items.map((item) => (
-            <ItemRow
-              key={item.id}
-              item={item}
-              qty={cart[item.id] ?? 0}
-              accepting={accepting}
-              onIncrement={onIncrement}
-              onDecrement={onDecrement}
-            />
-          ))}
-        </section>
-      ))}
+            <div className="flex flex-col gap-3">
+              {section.items.map((item) => (
+                <ItemCard
+                  key={item.id}
+                  item={item}
+                  qty={cart[item.id] ?? 0}
+                  accepting={accepting}
+                  onIncrement={onIncrement}
+                  onDecrement={onDecrement}
+                />
+              ))}
+            </div>
+          </section>
+        ))}
+      </div>
     </>
   );
 }
@@ -177,62 +164,54 @@ function CategoryRail({
 }) {
   const railRef = useRef<HTMLDivElement>(null);
 
-  // Keep the active chip in view as the guest scrolls the menu — on a phone
-  // the rail is wider than the screen, so without this the highlight
-  // regularly sits off-screen.
+  // Keep the active chip in view — the rail is wider than a phone screen, so
+  // without this the highlight regularly sits off-screen.
   useEffect(() => {
     if (!activeAnchor || !railRef.current) return;
     const chip = railRef.current.querySelector<HTMLElement>(`[data-anchor="${activeAnchor}"]`);
-    chip?.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "nearest" });
+    chip?.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
   }, [activeAnchor]);
 
   return (
     <nav
-      ref={railRef}
       aria-label="Menu categories"
-      className="sticky top-0 z-10 flex overflow-x-auto"
+      className="sticky top-0 z-20"
       style={{
-        background: "var(--color-neutral-100)",
-        borderBottom: "2px solid var(--color-text)",
-        scrollbarWidth: "none",
+        background: "color-mix(in srgb, var(--color-bg) 86%, transparent)",
+        backdropFilter: "blur(12px)",
+        WebkitBackdropFilter: "blur(12px)",
+        borderBottom: "1px solid var(--color-border)",
       }}
     >
-      {sections.map((section) => {
-        const anchor = categoryAnchor(section.category);
-        const active = anchor === activeAnchor;
+      <div
+        ref={railRef}
+        className="flex gap-2 overflow-x-auto px-4 py-3"
+        style={{ scrollbarWidth: "none" }}
+      >
+        {sections.map((section) => {
+          const anchor = categoryAnchor(section.category);
 
-        return (
-          <button
-            key={section.category.id}
-            type="button"
-            data-anchor={anchor}
-            onClick={() => onJump(anchor)}
-            aria-current={active ? "true" : undefined}
-            className="shrink-0 cursor-pointer px-[14px] py-3"
-            style={{
-              appearance: "none",
-              border: 0,
-              borderRight: "1px solid var(--color-divider)",
-              background: active ? "var(--color-text)" : "transparent",
-              color: active ? "var(--color-neutral-100)" : "var(--color-text)",
-              fontFamily: "var(--font-body)",
-              fontSize: 11,
-              fontWeight: 600,
-              letterSpacing: "0.12em",
-              textTransform: "uppercase",
-            }}
-          >
-            {section.category.name}
-          </button>
-        );
-      })}
+          return (
+            <button
+              key={section.category.id}
+              type="button"
+              data-anchor={anchor}
+              onClick={() => onJump(anchor)}
+              aria-current={anchor === activeAnchor ? "true" : undefined}
+              className="chip"
+            >
+              {section.category.name}
+            </button>
+          );
+        })}
+      </div>
     </nav>
   );
 }
 
-/* ── one menu row ──────────────────────────────────────────────────────── */
+/* ── one dish ──────────────────────────────────────────────────────────── */
 
-function ItemRow({
+function ItemCard({
   item,
   qty,
   accepting,
@@ -245,49 +224,48 @@ function ItemRow({
   onIncrement: (itemId: string) => void;
   onDecrement: (itemId: string) => void;
 }) {
-  // An item can sell out while this page is already open, so the row keeps a
-  // blocked state rather than assuming the server-rendered menu is still
-  // true.
+  // An item can sell out while this page is already open, so the card keeps a
+  // blocked state rather than assuming the server-rendered menu is still true.
   const blocked = !item.isAvailable || !accepting;
+  const inCart = qty > 0;
 
   return (
-    <div
-      className="flex items-start gap-4 py-4"
-      style={{
-        borderTop: "1px solid var(--color-divider)",
-        opacity: item.isAvailable ? 1 : 0.45,
-      }}
+    <article
+      className="card card-interactive flex gap-4 p-3"
+      style={
+        inCart
+          ? {
+              borderColor: "var(--color-primary-300)",
+              background: "var(--color-primary-50)",
+              boxShadow: "var(--shadow-md)",
+            }
+          : undefined
+      }
     >
-      <div className="relative shrink-0">
-        <Thumb src={item.imageUrl} size={76} />
-        <VegDot isVeg={item.isVeg} className="absolute bottom-0 left-0" />
-      </div>
+      <Thumb src={item.imageUrl} size={92} />
 
-      <div className="min-w-0 flex-1">
-        <div className="flex items-baseline gap-[6px]">
-          <span
-            style={{
-              fontFamily: "var(--font-heading)",
-              fontSize: 16,
-              fontWeight: 800,
-              letterSpacing: "-0.01em",
-            }}
-          >
+      <div className="flex min-w-0 flex-1 flex-col">
+        <div className="flex items-baseline gap-2">
+          <VegDot isVeg={item.isVeg} size={14} />
+          <h3 className="m-0" style={{ fontSize: 17, lineHeight: 1.25 }}>
             {item.name}
-          </span>
+          </h3>
           <Leader />
-          <span style={{ fontFamily: "var(--font-heading)", fontWeight: 900, fontSize: 16 }}>
+          <span
+            className="numeric shrink-0"
+            style={{ fontFamily: "var(--font-display)", fontSize: 17, fontWeight: 700 }}
+          >
             {formatINR(item.price)}
           </span>
         </div>
 
         {item.description && (
           <p
-            className="mt-[3px] mb-0"
+            className="mt-1 mb-0"
             style={{
-              fontSize: 12,
-              lineHeight: 1.45,
-              color: "var(--color-neutral-700)",
+              fontSize: 13,
+              lineHeight: 1.5,
+              color: "var(--color-text-soft)",
               textWrap: "pretty",
             }}
           >
@@ -295,14 +273,14 @@ function ItemRow({
           </p>
         )}
 
-        {item.badge && <div className="tag tag-outline mt-[6px]">{item.badge}</div>}
+        <div className="mt-auto flex flex-wrap items-center gap-2 pt-3">
+          {item.badge && <span className="tag tag-gold">{item.badge}</span>}
 
-        <div className="mt-2">
+          <span className="flex-1" />
+
           {blocked ? (
-            <span className="tag tag-neutral" style={{ padding: "8px 10px", fontSize: 11 }}>
-              {copy.guest.soldOut}
-            </span>
-          ) : qty > 0 ? (
+            <span className="tag tag-muted">{copy.guest.soldOut}</span>
+          ) : inCart ? (
             <Stepper
               qty={qty}
               label={item.name}
@@ -313,14 +291,14 @@ function ItemRow({
             <button
               type="button"
               onClick={() => onIncrement(item.id)}
-              className="btn btn-secondary"
-              style={{ minHeight: 36, minWidth: 88, padding: "0 14px" }}
+              className="btn btn-primary"
+              style={{ minHeight: 40, padding: "0 22px" }}
             >
               {copy.guest.add}
             </button>
           )}
         </div>
       </div>
-    </div>
+    </article>
   );
 }

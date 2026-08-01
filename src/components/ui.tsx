@@ -1,32 +1,39 @@
-import type { CSSProperties, ReactNode } from "react";
+import type { ReactNode } from "react";
 
 import { copy } from "@/lib/copy";
 
 /**
- * The small shared pieces of the Modernist system that both surfaces use.
- *
- * Anything larger lives with the surface that owns it — these are the parts
- * that would otherwise be copy-pasted between the guest menu and the pass.
+ * Shared pieces of the Warm Cafe system — the parts both surfaces use.
+ * Anything larger lives with the surface that owns it.
  */
 
 /* ── the FSSAI veg mark ────────────────────────────────────────────────── */
 
 /**
- * The square-with-a-dot every packaged and served food item carries in India:
- * green for vegetarian, brown-red for non-vegetarian. It is a legal marking,
- * not decoration, which is why its colors sit outside the mono palette.
+ * The square-with-a-dot every served food item carries in India: green for
+ * vegetarian, brown-red for non-vegetarian. It is a legal marking, which is
+ * why its colours sit outside the palette and why it keeps a hard square in
+ * a design that otherwise rounds everything.
  */
-export function VegDot({ isVeg, className = "" }: { isVeg: boolean; className?: string }) {
+export function VegDot({ isVeg, size = 16 }: { isVeg: boolean; size?: number }) {
   const color = isVeg ? "var(--color-veg)" : "var(--color-nonveg)";
 
   return (
     <span
-      className={`inline-flex items-center justify-center bg-white ${className}`}
-      style={{ width: 11, height: 11, border: `1.5px solid ${color}` }}
+      className="inline-flex shrink-0 items-center justify-center bg-white"
+      style={{
+        width: size,
+        height: size,
+        border: `1.5px solid ${color}`,
+        borderRadius: 3,
+      }}
       role="img"
       aria-label={isVeg ? copy.guest.veg : copy.guest.nonVeg}
     >
-      <span className="rounded-full" style={{ width: 4, height: 4, background: color }} />
+      <span
+        className="rounded-full"
+        style={{ width: size * 0.4, height: size * 0.4, background: color }}
+      />
     </span>
   );
 }
@@ -37,22 +44,35 @@ export type ConnectionState = "live" | "polling" | "offline";
 
 /**
  * A board that has silently stopped updating is worse than no board, so the
- * pass always says which of the three states it is in rather than looking
- * identical whether or not events are arriving.
+ * pass always says which of the three states it is in. The dot pulses only
+ * when live — motion here means "data is arriving", not decoration.
  */
 export function ConnectionDot({ state }: { state: ConnectionState }) {
   const color =
     state === "live"
-      ? "var(--color-accent)"
+      ? "var(--color-live)"
       : state === "polling"
         ? "var(--color-polling)"
-        : "var(--color-neutral-500)";
+        : "var(--color-offline)";
 
   return (
-    <span className="label inline-flex items-center gap-3" style={{ fontSize: 11 }}>
-      <span style={{ width: 8, height: 8, background: color }} aria-hidden />
-      <span>{copy.connection[state]}</span>
-      <span className="sr-only">{`Connection: ${state}`}</span>
+    <span
+      className="inline-flex items-center gap-2 rounded-full px-3 py-1.5"
+      style={{ background: "var(--color-dark-700)" }}
+    >
+      <span
+        aria-hidden
+        className="rounded-full"
+        style={{
+          width: 8,
+          height: 8,
+          background: color,
+          boxShadow: state === "live" ? `0 0 0 3px color-mix(in srgb, ${color} 28%, transparent)` : undefined,
+        }}
+      />
+      <span className="label" style={{ color: "var(--color-dark-soft)", fontSize: 10 }}>
+        {copy.connection[state]}
+      </span>
     </span>
   );
 }
@@ -76,12 +96,7 @@ export function Stepper({
 }) {
   return (
     <div className="stepper">
-      <button
-        type="button"
-        onClick={onDecrement}
-        disabled={disabled}
-        aria-label={`Remove one ${label}`}
-      >
+      <button type="button" onClick={onDecrement} disabled={disabled} aria-label={`Remove one ${label}`}>
         −
       </button>
       <span className="qty" aria-live="polite" aria-label={`${qty} ${label}`}>
@@ -101,18 +116,19 @@ export function Stepper({
 
 /* ── structure ─────────────────────────────────────────────────────────── */
 
-/** A section number set in the system's inverted numeral block. */
+/** A section number, set in the gold as a small filled disc. */
 export function Numeral({ children }: { children: ReactNode }) {
   return (
     <span
-      className="text-white"
+      className="inline-flex items-center justify-center rounded-full"
       style={{
-        fontFamily: "var(--font-heading)",
-        fontWeight: 900,
+        width: 26,
+        height: 26,
+        background: "var(--color-gold-100)",
+        color: "var(--color-gold-700)",
+        fontFamily: "var(--font-display)",
+        fontWeight: 700,
         fontSize: 12,
-        letterSpacing: "0.06em",
-        background: "var(--color-text)",
-        padding: "3px 7px",
       }}
     >
       {children}
@@ -120,12 +136,12 @@ export function Numeral({ children }: { children: ReactNode }) {
   );
 }
 
-/** The dotted leader running from a name to its price. */
-export function Leader({ solid = false }: { solid?: boolean }) {
-  return <span className={solid ? "leader-solid" : "leader"} aria-hidden />;
+/** The dotted leader running from a dish name to its price. */
+export function Leader() {
+  return <span className="leader" aria-hidden />;
 }
 
-/** An empty state drawn as a dashed cell rather than centred grey text. */
+/** An empty state — a soft dashed well rather than a hard box. */
 export function EmptyCell({
   children,
   tone = "light",
@@ -133,22 +149,26 @@ export function EmptyCell({
   children: ReactNode;
   tone?: "light" | "dark";
 }) {
-  const style: CSSProperties =
-    tone === "dark"
-      ? { border: "2px dashed var(--color-neutral-700)", color: "var(--color-neutral-500)" }
-      : { border: "2px dashed var(--color-neutral-400)", color: "var(--color-neutral-700)" };
+  const dark = tone === "dark";
 
   return (
-    <div className="label label-tight p-6" style={style}>
+    <div
+      className="rounded-2xl px-5 py-8 text-center text-sm"
+      style={{
+        border: `1.5px dashed ${dark ? "var(--color-dark-600)" : "var(--color-border-strong)"}`,
+        color: dark ? "var(--color-dark-faint)" : "var(--color-text-faint)",
+        background: dark ? "transparent" : "var(--color-surface-2)",
+      }}
+    >
       {children}
     </div>
   );
 }
 
 /** The angled status stamp. */
-export function Stamp({ children, size = 14 }: { children: ReactNode; size?: number }) {
+export function Stamp({ children, size = 13 }: { children: ReactNode; size?: number }) {
   return (
-    <div className="stamp" style={{ fontSize: size, padding: "5px 10px" }}>
+    <div className="stamp" style={{ fontSize: size, padding: "6px 12px" }}>
       {children}
     </div>
   );

@@ -1,20 +1,32 @@
 import type { Metadata, Viewport } from "next";
-import { Archivo } from "next/font/google";
+import { Karla, Playfair_Display } from "next/font/google";
 
 import { copy } from "@/lib/copy";
 
 import "./globals.css";
 
 /**
- * Archivo carries the whole system — headings and body both. Loading it
- * through `next/font` self-hosts the files and inlines the `@font-face`
- * rules, so there is no render-blocking round trip to Google's CDN on cafe
- * wifi and no layout shift when it lands.
+ * A serif/sans menu pairing — the oldest convention in the business, and what
+ * makes a list of dishes read as a menu rather than as a table of data.
+ *
+ * Playfair carries the voice: dish names, prices, headlines. Karla does
+ * everything functional — labels, buttons, forms, the pass.
+ *
+ * Both load through `next/font`, which self-hosts the files and inlines the
+ * `@font-face` rules: no render-blocking round trip to Google's CDN on cafe
+ * wifi, and no layout shift when they land.
  */
-const archivo = Archivo({
+const playfair = Playfair_Display({
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800", "900"],
-  variable: "--font-archivo",
+  weight: ["500", "600", "700", "800"],
+  variable: "--font-playfair",
+  display: "swap",
+});
+
+const karla = Karla({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-karla",
   display: "swap",
 });
 
@@ -39,12 +51,12 @@ export const viewport: Viewport = {
   // The guest surface is a menu people pinch to read prices. Locking zoom
   // would fail WCAG 1.4.4 and annoy everyone over forty.
   maximumScale: 5,
-  themeColor: "#f3f2f2",
+  themeColor: "#fdf7f1",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${archivo.variable} h-full antialiased`}>
+    <html lang="en" className={`${playfair.variable} ${karla.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col">{children}</body>
     </html>
   );

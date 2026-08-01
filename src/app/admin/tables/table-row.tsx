@@ -30,12 +30,15 @@ export function TableRow({
           alt={`QR code for ${table.label}`}
           width={64}
           height={64}
-          style={{ border: "2px solid var(--color-text)" }}
+          // Square, deliberately. A QR code's three finder patterns sit in its
+          // corners — rounding the image would clip exactly the marks a
+          // scanner locks onto.
+          style={{ border: "1px solid var(--color-border)", background: "#fff" }}
         />
       </td>
 
       <td>
-        <div style={{ fontFamily: "var(--font-heading)", fontWeight: 800, fontSize: 16 }}>
+        <div style={{ fontFamily: "var(--font-display)", fontWeight: 800, fontSize: 16 }}>
           {table.label}
         </div>
         {table.seats !== null && (
@@ -106,7 +109,7 @@ export function AddTableForm() {
     <form
       action={formAction}
       className="flex flex-wrap items-end gap-3 p-4"
-      style={{ border: "2px solid var(--color-text)" }}
+      style={{ border: "1px solid var(--color-border)", borderRadius: "var(--radius-lg)", background: "var(--color-surface)" }}
     >
       <label className="field">
         <span>Label</span>

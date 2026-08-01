@@ -28,11 +28,10 @@ export default async function AdminOverview() {
         <h1
           className="m-0"
           style={{
-            fontFamily: "var(--font-heading)",
-            fontWeight: 900,
+            fontFamily: "var(--font-display)",
+            fontWeight: 700,
             fontSize: 34,
-            letterSpacing: "-0.03em",
-            textTransform: "uppercase",
+            
           }}
         >
           {copy.admin.today}
@@ -44,7 +43,7 @@ export default async function AdminOverview() {
         className="grid gap-0"
         style={{
           gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
-          borderTop: "2px solid var(--color-text)",
+          borderTop: "1px solid var(--color-border)",
         }}
       >
         <Stat label="Orders" value={String(stats.orders)} />
@@ -61,8 +60,8 @@ export default async function AdminOverview() {
           <h2
             className="m-0"
             style={{
-              fontFamily: "var(--font-heading)",
-              fontWeight: 900,
+              fontFamily: "var(--font-display)",
+              fontWeight: 700,
               fontSize: 16,
               letterSpacing: "0.16em",
               textTransform: "uppercase",
@@ -97,7 +96,7 @@ export default async function AdminOverview() {
               <tbody>
                 {open.map((order) => (
                   <tr key={order.id}>
-                    <td style={{ fontFamily: "var(--font-heading)", fontWeight: 800 }}>
+                    <td style={{ fontFamily: "var(--font-display)", fontWeight: 800 }}>
                       {order.orderCode}
                     </td>
                     <td>{order.tableLabel}</td>
@@ -128,8 +127,8 @@ function Stat({ label, value }: { label: string; value: string }) {
       <div
         className="mt-1"
         style={{
-          fontFamily: "var(--font-heading)",
-          fontWeight: 900,
+          fontFamily: "var(--font-display)",
+          fontWeight: 700,
           fontSize: 30,
           letterSpacing: "-0.02em",
         }}

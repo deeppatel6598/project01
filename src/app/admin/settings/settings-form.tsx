@@ -17,7 +17,7 @@ export function SettingsForm({ restaurant }: { restaurant: Restaurant }) {
     <form
       action={formAction}
       className="flex flex-col gap-4 p-4"
-      style={{ border: "2px solid var(--color-text)" }}
+      style={{ border: "1px solid var(--color-border)", borderRadius: "var(--radius-lg)", background: "var(--color-surface)" }}
     >
       <label className="field">
         <span>Cafe name</span>

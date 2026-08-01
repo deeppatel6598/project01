@@ -60,7 +60,7 @@ export function OrdersScreen({
     >
       <header
         className="flex shrink-0 items-center justify-between gap-3 p-4"
-        style={{ borderBottom: "2px solid var(--color-text)" }}
+        style={{ borderBottom: "1px solid var(--color-border)" }}
       >
         <div>
           <div className="label label-wide" style={{ color: "var(--color-neutral-700)" }}>
@@ -69,12 +69,11 @@ export function OrdersScreen({
           <h2
             className="m-0 mt-1"
             style={{
-              fontFamily: "var(--font-heading)",
-              fontWeight: 900,
+              fontFamily: "var(--font-display)",
+              fontWeight: 700,
               fontSize: 26,
               lineHeight: 1,
-              letterSpacing: "-0.03em",
-              textTransform: "uppercase",
+              
             }}
           >
             {copy.guest.ordersTitle}
@@ -110,9 +109,9 @@ export function OrdersScreen({
         className="btn btn-primary btn-block shrink-0"
         style={{
           minHeight: 60,
-          borderTop: "2px solid var(--color-text)",
-          fontFamily: "var(--font-heading)",
-          fontWeight: 900,
+          borderTop: "1px solid var(--color-border)",
+          fontFamily: "var(--font-display)",
+          fontWeight: 700,
           fontSize: 15,
           letterSpacing: "0.06em",
         }}
@@ -140,15 +139,15 @@ function OrderCard({
   const stageIndex = ORDER_STAGES.indexOf(order.status as (typeof ORDER_STAGES)[number]);
 
   return (
-    <article className="mb-4" style={{ border: "2px solid var(--color-text)" }}>
+    <article className="mb-4" style={{ border: "1px solid var(--color-border)" }}>
       <div
         className="flex items-baseline justify-between gap-3 px-4 py-3"
-        style={{ borderBottom: "2px solid var(--color-text)" }}
+        style={{ borderBottom: "1px solid var(--color-border)" }}
       >
         <span
           style={{
-            fontFamily: "var(--font-heading)",
-            fontWeight: 900,
+            fontFamily: "var(--font-display)",
+            fontWeight: 700,
             fontSize: 20,
             letterSpacing: "0.02em",
           }}
@@ -164,14 +163,14 @@ function OrderCard({
       {cancelled ? (
         <div
           className="label label-tight px-4 py-3"
-          style={{ color: "var(--color-neutral-700)", borderBottom: "2px solid var(--color-text)" }}
+          style={{ color: "var(--color-neutral-700)", borderBottom: "1px solid var(--color-border)" }}
         >
           Cancelled
         </div>
       ) : (
         <ol
           className="m-0 grid list-none p-0"
-          style={{ gridTemplateColumns: "repeat(3, 1fr)", borderBottom: "2px solid var(--color-text)" }}
+          style={{ gridTemplateColumns: "repeat(3, 1fr)", borderBottom: "1px solid var(--color-border)" }}
         >
           {copy.guest.stages.map((name, index) => {
             const reached = index <= stageIndex;
@@ -193,8 +192,8 @@ function OrderCard({
                     border: `2px solid ${rule}`,
                     background: reached ? "var(--color-accent)" : "transparent",
                     color: ink,
-                    fontFamily: "var(--font-heading)",
-                    fontWeight: 900,
+                    fontFamily: "var(--font-display)",
+                    fontWeight: 700,
                     fontSize: 11,
                   }}
                 >
@@ -244,7 +243,7 @@ function OrderCard({
             <span
               className="text-right"
               style={{
-                fontFamily: "var(--font-heading)",
+                fontFamily: "var(--font-display)",
                 fontWeight: 800,
                 fontSize: 14,
                 minWidth: 56,
@@ -270,12 +269,12 @@ function OrderCard({
 
         <div
           className="mt-3 flex items-baseline justify-between pt-3"
-          style={{ borderTop: "2px solid var(--color-text)" }}
+          style={{ borderTop: "1px solid var(--color-border)" }}
         >
           <span className="label" style={{ fontWeight: 700, letterSpacing: "0.16em" }}>
             {copy.guest.total}
           </span>
-          <span style={{ fontFamily: "var(--font-heading)", fontWeight: 900, fontSize: 20 }}>
+          <span style={{ fontFamily: "var(--font-display)", fontWeight: 900, fontSize: 20 }}>
             {formatINR(order.total)}
           </span>
         </div>

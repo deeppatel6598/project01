@@ -4,31 +4,28 @@ import Image from "next/image";
 import { useState } from "react";
 
 /**
- * A food photograph in its bordered box.
+ * A dish photograph in its rounded frame.
  *
- * The box is drawn whether or not the image arrives. Menu photography is
- * hosted off-site, cafe wifi is unreliable, and an item that renders a broken
- * image icon reads as a broken menu — where an empty framed square just reads
- * as an item without a photo, which half of them are anyway.
+ * The frame is drawn whether or not the image arrives. Photography is often
+ * hosted off-site, cafe wifi is unreliable, and an item rendering a broken
+ * image icon reads as a broken menu — where an empty warm tile just reads as
+ * an item without a photo, which half of them will be.
  *
- * Every photograph goes through the system's grayscale treatment: the design
- * prints imagery in pure black and white, and that is a rule of the system
- * rather than a choice made per screen.
+ * The old system printed every photograph in pure black and white. That was
+ * the single most appetite-suppressing thing about it, so images now take a
+ * light warm grade instead: coherent, still food.
  */
 export function Thumb({
   src,
   alt = "",
   size,
-  borderWidth = 2,
-  contrast = true,
+  radius = "var(--radius-md)",
   priority = false,
 }: {
   src: string | null;
   alt?: string;
   size: number;
-  borderWidth?: number;
-  /** The hero and menu rows carry the extra contrast bump; small chips do not. */
-  contrast?: boolean;
+  radius?: string;
   priority?: boolean;
 }) {
   const [failed, setFailed] = useState(false);
@@ -39,8 +36,9 @@ export function Thumb({
       style={{
         width: size,
         height: size,
-        border: `${borderWidth}px solid var(--color-text)`,
-        background: "var(--color-neutral-300)",
+        borderRadius: radius,
+        background: "linear-gradient(140deg, var(--color-gold-100), var(--color-primary-100))",
+        boxShadow: "inset 0 0 0 1px var(--color-border)",
       }}
     >
       {src && !failed && (
@@ -53,11 +51,9 @@ export function Thumb({
           // The bundled menu artwork is SVG. Next's optimizer refuses SVG
           // unless `dangerouslyAllowSVG` is on — which would also apply to
           // remote SVG, and remote SVG can carry script. Bypassing the
-          // optimizer for our own files keeps that flag off: these are already
-          // ~1KB vectors that need no resizing.
+          // optimizer for our own ~1KB vectors keeps that flag off.
           unoptimized={src.endsWith(".svg")}
-          className="object-cover"
-          style={{ filter: contrast ? "grayscale(1) contrast(1.08)" : "grayscale(1)" }}
+          className="photo-warm object-cover"
           onError={() => setFailed(true)}
         />
       )}

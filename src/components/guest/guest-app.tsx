@@ -235,53 +235,67 @@ export function GuestApp({
       className="relative mx-auto flex min-h-dvh w-full flex-col"
       style={{
         maxWidth: 480,
-        background: "var(--color-neutral-100)",
-        borderLeft: "2px solid var(--color-text)",
-        borderRight: "2px solid var(--color-text)",
+        background: "var(--color-bg)",
+        boxShadow: "var(--shadow-lg)",
       }}
     >
       <div ref={scrollRootRef} className="flex-1">
         {/* hero */}
         <div
           className="relative overflow-hidden"
-          style={{ height: 150, borderBottom: "2px solid var(--color-text)", background: "var(--color-neutral-300)" }}
+          style={{ height: 208, background: "var(--color-bg-tint)" }}
         >
-          <HeroImage
-            src={restaurant.heroImageUrl}
-            alt={`${restaurant.name} dining room`}
+          <HeroImage src={restaurant.heroImageUrl} alt={`${restaurant.name} dining room`} />
+
+          {/* Scrim, so the chips and the strip stay legible over any photo the
+              cafe eventually puts here. */}
+          <div
+            className="absolute inset-0"
+            style={{
+              background:
+                "linear-gradient(180deg, rgb(43 29 22 / 0.42) 0%, transparent 42%, rgb(43 29 22 / 0.30) 100%)",
+            }}
+            aria-hidden
           />
 
-          <div
-            className="absolute bottom-0 left-0 text-white"
+          <span
+            className="tag absolute bottom-3 left-4 text-white"
             style={{
-              background: "var(--color-accent)",
-              fontFamily: "var(--font-heading)",
-              fontWeight: 900,
-              fontSize: 12,
-              letterSpacing: "0.18em",
-              textTransform: "uppercase",
-              padding: "7px 12px",
+              background: "linear-gradient(135deg, var(--color-primary-500), var(--color-primary-600))",
+              boxShadow: "var(--shadow-ember)",
+              fontSize: 10,
+              letterSpacing: "0.12em",
             }}
           >
             {copy.guest.scanStrip}
-          </div>
+          </span>
 
           <button
             type="button"
             onClick={() => setOrdersOpen(true)}
-            className="btn btn-secondary absolute"
-            style={{ right: 12, top: 12, background: "var(--color-neutral-100)", padding: "0 12px" }}
+            className="btn absolute"
+            style={{
+              right: 12,
+              top: 12,
+              minHeight: 40,
+              padding: "0 14px",
+              background: "color-mix(in srgb, var(--color-surface) 90%, transparent)",
+              backdropFilter: "blur(8px)",
+              WebkitBackdropFilter: "blur(8px)",
+              color: "var(--color-text)",
+              boxShadow: "var(--shadow-sm)",
+            }}
           >
             <span>{copy.guest.myOrders}</span>
             {myOrders.length > 0 && (
               <span
-                className="text-white"
+                className="numeric inline-flex items-center justify-center rounded-full text-white"
                 style={{
-                  fontFamily: "var(--font-heading)",
-                  fontWeight: 900,
-                  fontSize: 12,
-                  background: "var(--color-accent)",
-                  padding: "2px 6px",
+                  minWidth: 20,
+                  height: 20,
+                  fontSize: 11,
+                  fontWeight: 700,
+                  background: "var(--color-primary-500)",
                 }}
               >
                 {myOrders.length}
@@ -291,37 +305,40 @@ export function GuestApp({
         </div>
 
         {/* masthead */}
-        <div className="px-4 pt-6 pb-3" style={{ borderBottom: "2px solid var(--color-text)" }}>
+        <div className="warm-wash px-4 pt-6 pb-5">
           <div
-            className="label label-wide flex items-baseline justify-between gap-3"
-            style={{ color: "var(--color-neutral-700)" }}
+            className="label flex items-baseline justify-between gap-3"
+            style={{ color: "var(--color-gold-600)" }}
           >
             <span>{restaurant.name}</span>
             <span>Est. 2019</span>
           </div>
 
-          <h1
-            className="m-0 mt-3"
-            style={{
-              fontFamily: "var(--font-heading)",
-              fontWeight: 900,
-              fontSize: 44,
-              lineHeight: 0.88,
-              letterSpacing: "-0.04em",
-              textTransform: "uppercase",
-            }}
-          >
-            {copy.guest.menuTitle[0]}
-            <br />
-            {copy.guest.menuTitle[1]}
+          <h1 className="m-0 mt-2" style={{ fontSize: 40, lineHeight: 1.02 }}>
+            {copy.guest.menuTitle[0]}{" "}
+            <em style={{ color: "var(--color-primary-600)", fontStyle: "italic" }}>
+              {copy.guest.menuTitle[1]}
+            </em>
           </h1>
 
-          <div
-            className="label mt-3 flex items-baseline justify-between gap-3 pt-2"
-            style={{ borderTop: "2px solid var(--color-text)", fontWeight: 700 }}
-          >
-            <span>{table.label}</span>
-            <span style={{ color: "var(--color-accent-700)" }}>
+          <div className="mt-4 flex flex-wrap items-center gap-2">
+            <span
+              className="tag"
+              style={{
+                background: "var(--color-surface)",
+                color: "var(--color-text)",
+                boxShadow: "var(--shadow-xs)",
+              }}
+            >
+              {table.label}
+            </span>
+            <span
+              className="tag"
+              style={{
+                background: accepting ? "var(--color-primary-100)" : "var(--color-surface-2)",
+                color: accepting ? "var(--color-primary-800)" : "var(--color-text-faint)",
+              }}
+            >
               {accepting ? copy.guest.open(restaurant.hoursLabel) : copy.guest.closed}
             </span>
           </div>
@@ -337,42 +354,47 @@ export function GuestApp({
         />
 
         <p
-          className="label label-tight px-4 pt-6 mb-0"
-          style={{ color: "var(--color-neutral-600)", paddingBottom: cartBarVisible ? 120 : 32 }}
+          className="label mt-8 px-4 text-center"
+          style={{ color: "var(--color-text-faint)", paddingBottom: cartBarVisible ? 128 : 40 }}
         >
           {copy.guest.payAtCounter}
         </p>
       </div>
 
-      {/* the cart bar — always visible once something is in the basket */}
+      {/* The cart bar — always visible once something is in the basket. It
+          floats clear of the bottom edge and sits inside the safe area, so it
+          never collides with a gesture bar. */}
       {cartBarVisible && (
-        <button
-          type="button"
-          onClick={() => setSheetOpen(true)}
-          className="btn btn-primary btn-block fixed bottom-0 z-30"
+        <div
+          // Centred with `inset-x-0` + `mx-auto` rather than a
+          // `translateX(-50%)`: the entrance animation's final keyframe sets
+          // `transform: none`, which would overwrite an inline transform and
+          // leave the bar hanging off the right edge.
+          className="rise-in fixed inset-x-0 bottom-0 z-30 mx-auto w-full px-4"
           style={{
             maxWidth: 480,
-            width: "100%",
-            left: "50%",
-            transform: "translateX(-50%)",
-            minHeight: 60,
-            borderTop: "2px solid var(--color-text)",
+            paddingBottom: "calc(16px + env(safe-area-inset-bottom))",
           }}
         >
-          <span style={{ fontSize: 12 }}>
-            {copy.guest.itemCount(cart.count)} · {formatINR(cartTotal)}
-          </span>
-          <span
-            style={{
-              fontFamily: "var(--font-heading)",
-              fontWeight: 900,
-              fontSize: 16,
-              letterSpacing: "0.06em",
-            }}
+          <button
+            type="button"
+            onClick={() => setSheetOpen(true)}
+            className="btn btn-primary btn-block"
+            style={{ minHeight: 60 }}
           >
-            {copy.guest.reviewOrder} →
-          </span>
-        </button>
+            <span className="flex flex-col items-start leading-tight">
+              <span className="numeric" style={{ fontSize: 15, fontWeight: 700 }}>
+                {formatINR(cartTotal)}
+              </span>
+              <span style={{ fontSize: 11, opacity: 0.85, fontWeight: 500 }}>
+                {copy.guest.itemCount(cart.count)}
+              </span>
+            </span>
+            <span style={{ fontFamily: "var(--font-display)", fontSize: 16, fontWeight: 700 }}>
+              {copy.guest.reviewOrder} →
+            </span>
+          </button>
+        </div>
       )}
 
       <CartSheet

@@ -73,7 +73,7 @@ export function MenuRow({ item }: { item: MenuItem }) {
           style={{
             minHeight: 36,
             padding: "0 12px",
-            border: "2px solid var(--color-text)",
+            border: "1px solid var(--color-border)",
             background: item.isAvailable ? "transparent" : "var(--color-text)",
             color: item.isAvailable ? "var(--color-text)" : "var(--color-neutral-100)",
           }}

@@ -64,12 +64,8 @@ function NotLinked() {
       <h1
         className="m-0 mt-3"
         style={{
-          fontFamily: "var(--font-heading)",
-          fontWeight: 900,
           fontSize: 40,
-          lineHeight: 0.9,
-          letterSpacing: "-0.04em",
-          textTransform: "uppercase",
+          lineHeight: 1.05,
         }}
       >
         Not

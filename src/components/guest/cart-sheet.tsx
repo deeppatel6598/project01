@@ -90,21 +90,20 @@ export function CartSheet({
           maxWidth: 480,
           maxHeight: "92%",
           background: "var(--color-neutral-100)",
-          borderTop: "2px solid var(--color-text)",
+          borderTop: "1px solid var(--color-border)",
         }}
       >
         <div
           className="flex items-center justify-between p-4"
-          style={{ borderBottom: "2px solid var(--color-text)" }}
+          style={{ borderBottom: "1px solid var(--color-border)" }}
         >
           <h2
             className="m-0"
             style={{
-              fontFamily: "var(--font-heading)",
-              fontWeight: 900,
+              fontFamily: "var(--font-display)",
+              fontWeight: 700,
               fontSize: 20,
-              letterSpacing: "-0.02em",
-              textTransform: "uppercase",
+              
             }}
           >
             {copy.guest.yourOrder}
@@ -129,13 +128,13 @@ export function CartSheet({
             >
               {item.imageUrl && <Thumb src={item.imageUrl} size={40} />}
               <span
-                style={{ fontFamily: "var(--font-heading)", fontWeight: 800, fontSize: 13, minWidth: 26 }}
+                style={{ fontFamily: "var(--font-display)", fontWeight: 800, fontSize: 13, minWidth: 26 }}
               >
                 {qty}×
               </span>
               <span style={{ fontSize: 14, fontWeight: 600 }}>{item.name}</span>
               <Leader />
-              <span style={{ fontFamily: "var(--font-heading)", fontWeight: 800, fontSize: 14 }}>
+              <span style={{ fontFamily: "var(--font-display)", fontWeight: 800, fontSize: 14 }}>
                 {formatINR(lineTotal)}
               </span>
             </div>
@@ -149,12 +148,12 @@ export function CartSheet({
 
           <div
             className="flex items-baseline justify-between py-4"
-            style={{ borderBottom: "2px solid var(--color-text)" }}
+            style={{ borderBottom: "1px solid var(--color-border)" }}
           >
             <span className="label" style={{ fontWeight: 700, letterSpacing: "0.16em" }}>
               {copy.guest.total}
             </span>
-            <span style={{ fontFamily: "var(--font-heading)", fontWeight: 900, fontSize: 26 }}>
+            <span style={{ fontFamily: "var(--font-display)", fontWeight: 900, fontSize: 26 }}>
               {formatINR(total)}
             </span>
           </div>
@@ -208,8 +207,8 @@ export function CartSheet({
             className="btn btn-primary btn-block mt-4"
             style={{
               minHeight: 60,
-              fontFamily: "var(--font-heading)",
-              fontWeight: 900,
+              fontFamily: "var(--font-display)",
+              fontWeight: 700,
               fontSize: 16,
               letterSpacing: "0.06em",
             }}
