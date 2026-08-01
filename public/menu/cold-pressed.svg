@@ -1,15 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" role="img" aria-label="Cold pressed juice">
-  <rect width="200" height="200" fill="#d7d3d3"/>
   <g transform="translate(100 100) scale(0.82) translate(-100 -100)">
-    <!-- straw -->
-    <path d="M132 30 108 96" stroke="#201e1d" stroke-width="9" stroke-linecap="square"/>
-    <!-- glass -->
-    <path d="M56 60h88l-12 116H68z" fill="none" stroke="#201e1d" stroke-width="9"/>
-    <!-- juice line -->
-    <path d="M62 100h76l-9 68H71z" fill="#201e1d"/>
-    <!-- citrus wheel on the rim -->
-    <circle cx="150" cy="72" r="26" fill="#d7d3d3" stroke="#201e1d" stroke-width="8"/>
-    <g stroke="#201e1d" stroke-width="6">
+        <path d="M132 30 108 96" stroke="#3b2418" stroke-width="9" stroke-linecap="square"/>
+        <path d="M56 60h88l-12 116H68z" fill="none" stroke="#3b2418" stroke-width="9"/>
+        <path d="M62 100h76l-9 68H71z" fill="#3b2418"/>
+        <circle cx="150" cy="72" r="26" fill="#fdf5ea" stroke="#3b2418" stroke-width="8"/>
+    <g stroke="#3b2418" stroke-width="6">
       <path d="M150 50v44M128 72h44M134 56l32 32M166 56l-32 32"/>
     </g>
   </g>

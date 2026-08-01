@@ -1,12 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" role="img" aria-label="Toast and small plates">
-  <rect width="200" height="200" fill="#d7d3d3"/>
   <g transform="translate(100 100) scale(0.82) translate(-100 -100)">
-    <!-- slice -->
-    <path d="M44 74a26 26 0 0 1 26-26h60a26 26 0 0 1 26 26v92H44z" fill="none" stroke="#201e1d" stroke-width="9"/>
-    <!-- topping -->
-    <path d="M60 92h80v34H60z" fill="#201e1d"/>
-    <!-- seeds / flakes -->
-    <g fill="#201e1d">
+        <path d="M44 74a26 26 0 0 1 26-26h60a26 26 0 0 1 26 26v92H44z" fill="none" stroke="#3b2418" stroke-width="9"/>
+        <path d="M60 92h80v34H60z" fill="#3b2418"/>
+        <g fill="#3b2418">
       <rect x="66" y="140" width="14" height="9"/>
       <rect x="93" y="140" width="14" height="9"/>
       <rect x="120" y="140" width="14" height="9"/>

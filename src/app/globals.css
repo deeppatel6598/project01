@@ -1,56 +1,110 @@
 @import "tailwindcss";
 
 /* ══════════════════════════════════════════════════════════════════════════
-   Modernist — design-system tokens.
+   Warm Cafe — the Tablekit theme.
 
-   Ported verbatim from the Claude Design project's
-   `_ds/modernist/styles.css`. This block is the source of truth for the
-   look: flat, architectural, set entirely in Archivo, near-mono red on
-   white, visible modular grid, zero corner radius, strong 2px rules.
+   Replaces the original flat "Modernist" system (mono red on grey, zero
+   radius, 2px hard rules) with something warmer and more appetising, while
+   keeping every functional decision that system got right: the docket, the
+   light-guest / dark-pass split, 44px targets, AA contrast.
 
-   Retune here — never hard-code a hex, a font name, or a px value that a
-   token already carries.
+   The palette is built from three sources — an appetising red-orange and a
+   warm gold (restaurant/food-service convention), earth tones for the ground
+   (terracotta, sand, cream), and a moss green kept for the FSSAI veg mark.
+   Nothing is a neutral grey: even the "greys" are warm, which is most of
+   what makes the difference between a cafe and an admin panel.
+
+   Retune here. Never hard-code a hex or a px value a token already carries.
    ══════════════════════════════════════════════════════════════════════ */
 
 @theme {
-  --color-bg: #f3f2f2;
-  --color-surface: #eae9e9;
-  --color-text: #201e1d;
-  --color-accent: #ec3013;
-  --color-divider: color-mix(in srgb, #201e1d 40%, transparent);
+  /* ── ground ─────────────────────────────────────────────────────────── */
+  --color-bg: #fdf7f1;          /* warm cream — the guest ground */
+  --color-bg-tint: #f7ebdd;     /* the band behind sections */
+  --color-surface: #ffffff;     /* cards */
+  --color-surface-2: #fbf2e8;   /* recessed / hovered surface */
 
-  /* Tonal ramps — generated in OKLCH on one shared lightness scale, so the
-     same step of any role matches the others in visual value. */
-  --color-neutral-100: #f8f4f4;
-  --color-neutral-200: #eae7e7;
-  --color-neutral-300: #d7d3d3;
-  --color-neutral-400: #bab6b6;
-  --color-neutral-500: #9b9797;
-  --color-neutral-600: #7d7979;
-  --color-neutral-700: #605d5d;
-  --color-neutral-800: #444141;
-  --color-neutral-900: #2d2b2b;
+  /* ── ink ────────────────────────────────────────────────────────────── */
+  --color-text: #2b1d16;        /* espresso, not black */
+  --color-text-soft: #6b5647;   /* secondary copy — 5.6:1 on cream */
+  --color-text-faint: #8b7565;  /* meta labels — 4.6:1 on cream */
+  --color-border: #ecdccb;
+  --color-border-strong: #dcc4ab;
 
-  --color-accent-100: #fff2ef;
-  --color-accent-200: #ffe0d9;
-  --color-accent-300: #ffc4b8;
-  --color-accent-400: #ff9783;
-  --color-accent-500: #ff563c;
-  --color-accent-600: #dd2b0f;
-  --color-accent-700: #ae1800;
-  --color-accent-800: #7c1405;
-  --color-accent-900: #4d170e;
+  /* ── ember: the primary, and the appetite ───────────────────────────── */
+  --color-primary-50: #fff4ee;
+  --color-primary-100: #ffe4d5;
+  --color-primary-200: #ffc7ac;
+  --color-primary-300: #ffa176;
+  --color-primary-400: #fb7439;
+  --color-primary-500: #ea5310;  /* fills with white text — 4.6:1 */
+  --color-primary-600: #d64500;
+  --color-primary-700: #b03500;  /* primary text on cream — 6.1:1 */
+  --color-primary-800: #8a2b02;
+  --color-primary-900: #5e1f04;
 
-  /* The veg/non-veg FSSAI dot and the polling state are the only colors
-     outside the mono scheme — they are regulatory / status signals, not
-     brand. */
-  --color-veg: #47584a;
+  /* ── crema: the gold, for badges and small emphasis ─────────────────── */
+  --color-gold-50: #fdf7e8;
+  --color-gold-100: #f9ecc7;
+  --color-gold-200: #f2da93;
+  --color-gold-300: #e8c25a;
+  --color-gold-400: #d9a72f;
+  --color-gold-500: #bd8a1a;
+  --color-gold-600: #9a6d12;   /* gold text on cream — 4.7:1 */
+  --color-gold-700: #7a560f;
+
+  /* ── the pass: warm dark, never blue-black ──────────────────────────── */
+  --color-dark-900: #17110e;
+  --color-dark-800: #201814;
+  --color-dark-700: #2c211b;
+  --color-dark-600: #3d2e25;
+  --color-dark-500: #574337;
+  --color-dark-text: #f7efe6;
+  --color-dark-soft: #c4ad9a;   /* 7.1:1 on dark-900 */
+  --color-dark-faint: #9c8574;  /* 4.6:1 on dark-900 */
+
+  /* ── status ─────────────────────────────────────────────────────────── */
+  --color-veg: #3f7a4f;         /* the FSSAI mark — a legal marking */
   --color-nonveg: #9e3526;
-  --color-polling: #d4a24c;
+  --color-live: #3f9e5f;
+  --color-polling: #d9a72f;
+  --color-offline: #9c8574;
 
-  --font-heading: var(--font-archivo), system-ui, sans-serif;
-  --font-body: var(--font-archivo), system-ui, sans-serif;
-  --font-heading-weight: 800;
+  /* The docket keeps its own paper stock, warmer than any surface. */
+  --color-paper: #fdf5ea;
+
+  /* ── type ───────────────────────────────────────────────────────────── */
+  /* Playfair carries the menu voice — dish names, prices, headlines. Karla
+     does everything functional. A serif/sans menu pairing is the oldest
+     convention in the business and it is what makes a list of items read as
+     a menu rather than as a table of data. */
+  --font-display: var(--font-playfair), Georgia, serif;
+  --font-body: var(--font-karla), system-ui, sans-serif;
+
+  /* ── shape ──────────────────────────────────────────────────────────── */
+  /* The single biggest departure from the old system: things have corners
+     again. */
+  --radius-xs: 6px;
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+  --radius-pill: 999px;
+
+  /* ── elevation ──────────────────────────────────────────────────────── */
+  /* Shadows are tinted with the ground's own brown. A neutral black shadow
+     on a cream surface reads as dirt. */
+  --shadow-xs: 0 1px 2px rgb(93 58 34 / 0.06);
+  --shadow-sm: 0 2px 6px rgb(93 58 34 / 0.08);
+  --shadow-md: 0 6px 18px rgb(93 58 34 / 0.10), 0 2px 5px rgb(93 58 34 / 0.06);
+  --shadow-lg: 0 16px 40px rgb(93 58 34 / 0.14), 0 4px 10px rgb(93 58 34 / 0.08);
+  --shadow-ember: 0 8px 22px rgb(214 69 0 / 0.28);
+
+  /* ── motion ─────────────────────────────────────────────────────────── */
+  /* One rhythm for the whole product: enter on ease-out, exit faster. */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --dur-fast: 140ms;
+  --dur: 220ms;
 
   --spacing-1: 4px;
   --spacing-2: 8px;
@@ -58,21 +112,8 @@
   --spacing-4: 16px;
   --spacing-6: 24px;
   --spacing-8: 32px;
-
-  --radius-sm: 0px;
-  --radius-md: 0px;
-  --radius-lg: 0px;
-
-  /* Elevation — derived from the ground: soft ink-tinted shadows on a
-     light theme, a hairline edge + ambient darkness on a dark one. */
-  --shadow-sm: 0 1px 2px color-mix(in srgb, #2d2b2b 14%, transparent);
-  --shadow-md: 0 3px 10px color-mix(in srgb, #2d2b2b 16%, transparent);
-  --shadow-lg: 0 12px 32px color-mix(in srgb, #2d2b2b 22%, transparent);
 }
 
-/* The design markup addresses spacing as `var(--space-N)`. Tailwind v4 owns
-   the `--spacing-*` namespace, so alias the design's names onto it rather
-   than maintaining two scales that can drift. */
 :root {
   --space-1: var(--spacing-1);
   --space-2: var(--spacing-2);
@@ -80,6 +121,47 @@
   --space-4: var(--spacing-4);
   --space-6: var(--spacing-6);
   --space-8: var(--spacing-8);
+
+  /* ── legacy token bridge ─────────────────────────────────────────────
+     The previous Modernist system's names, remapped onto the warm palette.
+     Kept so the admin and auth screens — which are staff tools, not the
+     guest-facing surfaces this redesign is about — pick up the new colours
+     and type without every inline style being rewritten at once.
+
+     New work should use the tokens above. This block is a migration aid,
+     not a second palette: nothing here introduces a colour that is not
+     already defined. */
+  --color-neutral-100: var(--color-surface);
+  --color-neutral-200: var(--color-surface-2);
+  --color-neutral-300: var(--color-bg-tint);
+  --color-neutral-400: var(--color-border-strong);
+  --color-neutral-500: var(--color-text-faint);
+  --color-neutral-600: var(--color-text-faint);
+  --color-neutral-700: var(--color-text-soft);
+  --color-neutral-800: var(--color-dark-700);
+  --color-neutral-900: var(--color-dark-900);
+
+  --color-accent: var(--color-primary-500);
+  --color-accent-100: var(--color-primary-50);
+  --color-accent-200: var(--color-primary-100);
+  --color-accent-400: var(--color-primary-300);
+  --color-accent-600: var(--color-primary-600);
+  --color-accent-700: var(--color-primary-700);
+  --color-accent-800: var(--color-primary-800);
+
+  --color-divider: var(--color-border);
+  --font-heading: var(--font-display);
+
+  /* The old system set every heading in a heavy uppercase sans. Playfair at
+     900 does not exist and uppercase serif at small sizes is unreadable, so
+     legacy call sites land on a sane weight instead. */
+  --font-heading-weight: 700;
+}
+
+/* Legacy label modifiers, folded onto the new tracking. */
+.label-wide,
+.label-tight {
+  letter-spacing: 0.08em;
 }
 
 /* ── base ──────────────────────────────────────────────────────────────── */
@@ -99,9 +181,9 @@ body {
   background: var(--color-bg);
   color: var(--color-text);
   font-family: var(--font-body);
-  font-size: 15px;
-  line-height: 1.55;
-  font-weight: 400;
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
 }
 
 h1,
@@ -110,54 +192,91 @@ h3,
 h4,
 h5,
 h6 {
-  font-family: var(--font-heading);
-  font-weight: var(--font-heading-weight);
-  line-height: 1.12;
+  font-family: var(--font-display);
+  font-weight: 700;
+  line-height: 1.14;
   letter-spacing: -0.015em;
   margin: 0 0 var(--space-2);
 }
 
-h1 { font-size: 42px; }
-h2 { font-size: 32px; }
-h3 { font-size: 25px; }
-h4 { font-size: 20px; }
-h5 { font-size: 16px; }
-h6 { font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase; }
-
-p { margin: 0 0 var(--space-3); }
+p {
+  margin: 0 0 var(--space-3);
+}
 
 a {
-  color: var(--color-accent-700);
+  color: var(--color-primary-700);
   text-underline-offset: 3px;
+  transition: color var(--dur-fast) var(--ease-out);
 }
-a:hover { color: var(--color-accent); }
+a:hover {
+  color: var(--color-primary-500);
+}
 
 img {
   display: block;
   max-width: 100%;
 }
 
-/* Interaction states are themed, never browser defaults. */
-:focus { outline: none; }
-:focus-visible {
-  outline: 2px solid var(--color-accent);
-  outline-offset: 2px;
+:focus {
+  outline: none;
 }
-::selection { background: color-mix(in srgb, var(--color-accent) 30%, transparent); }
+:focus-visible {
+  outline: 3px solid var(--color-primary-400);
+  outline-offset: 2px;
+  border-radius: var(--radius-xs);
+}
+::selection {
+  background: var(--color-primary-200);
+}
 
-::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-thumb { background: var(--color-neutral-400); }
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-border-strong);
+  border-radius: var(--radius-pill);
+}
 
-/* On the dark pass board the accent ring sinks into the ink; step the ring
-   up the ramp so keyboard focus stays visible there too. */
-.on-dark :focus-visible { outline-color: var(--color-accent-400); }
+/* On the pass the ember ring sinks into the dark ground; step it up. */
+.on-dark :focus-visible {
+  outline-color: var(--color-primary-300);
+}
+
+/* ── type utilities ────────────────────────────────────────────────────── */
+
+.font-display {
+  font-family: var(--font-display);
+}
+
+/* The small-caps utility label. Softer tracking than the old system — wide
+   letterspacing on a serif-led page reads as shouting. */
+.label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.label-lg {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* Prices, timers and quantities — tabular figures so columns of numbers do
+   not jitter as they tick. */
+.numeric {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+}
 
 /* ── motion ────────────────────────────────────────────────────────────── */
 
-/* The single orchestrated moment: a new docket landing on the pass. */
 @keyframes docketIn {
   from {
-    transform: translateY(-14px);
+    transform: translateY(-12px) scale(0.98);
     opacity: 0;
   }
   to {
@@ -166,8 +285,46 @@ img {
   }
 }
 
+@keyframes riseIn {
+  from {
+    transform: translateY(10px);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+
+@keyframes sheetUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: none;
+  }
+}
+
+@keyframes scrimIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 .docket-in {
-  animation: docketIn 260ms ease-out;
+  animation: docketIn 300ms var(--ease-out);
+}
+.rise-in {
+  animation: riseIn var(--dur) var(--ease-out) both;
+}
+.sheet-up {
+  animation: sheetUp 260ms var(--ease-out);
+}
+.scrim-in {
+  animation: scrimIn 180ms ease-out;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -182,24 +339,56 @@ img {
 
 /* ── imagery ───────────────────────────────────────────────────────────── */
 
-/* Every content photograph prints in pure black and white. */
-.grayscale-photo {
-  filter: grayscale(1) contrast(1.08);
+/* Food is not photographed in black and white. The old system's grayscale
+   rule was the single most appetite-suppressing thing about it; images now
+   carry a light warm grade instead, which keeps them coherent without
+   draining them. */
+.photo-warm {
+  filter: saturate(1.06) contrast(1.03);
+}
+
+/* ── surfaces ──────────────────────────────────────────────────────────── */
+
+.card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  transition:
+    box-shadow var(--dur) var(--ease-out),
+    border-color var(--dur) var(--ease-out),
+    transform var(--dur) var(--ease-out);
+}
+
+/* Hover lift only where a pointer exists — on a phone it would fire on tap
+   and stick. */
+@media (hover: hover) {
+  .card-interactive:hover {
+    box-shadow: var(--shadow-md);
+    border-color: var(--color-border-strong);
+    transform: translateY(-2px);
+  }
+}
+
+.panel {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
 }
 
 /* ── the docket ────────────────────────────────────────────────────────── */
 
-/* The signature element. It appears in both surfaces — the guest's
-   confirmation is the same docket the kitchen sees, which is what tells the
-   guest their order really landed. Perforated top and bottom edge, drawn
-   with a repeating radial-gradient so it needs no image. */
+/* Still the signature element, still shared by both surfaces — the guest's
+   confirmation is the same docket the kitchen sees. Now on warm paper with
+   softened corners between the perforations. */
 .docket {
   position: relative;
-  background: var(--color-neutral-100);
+  background: var(--color-paper);
   color: var(--color-text);
-  border-left: 2px solid var(--color-text);
-  border-right: 2px solid var(--color-text);
+  border-radius: var(--radius-sm);
   padding: var(--space-4);
+  box-shadow: var(--shadow-md);
 }
 
 .docket::before,
@@ -208,78 +397,67 @@ img {
   position: absolute;
   left: 0;
   right: 0;
-  height: 6px;
-  background-size: 10px 6px;
+  height: 7px;
+  background-size: 12px 7px;
+  background-repeat: repeat-x;
 }
 
-/* One circle per 10×6 tile, not a repeating gradient inside each tile —
-   `repeating-radial-gradient` draws concentric rings, which reads as a comb
-   of hairlines rather than a torn edge. A single stop per tile gives the
-   half-round scallops a perforated docket actually has. */
+/* One circle per tile — a repeating gradient draws concentric rings, which
+   reads as a comb of hairlines rather than a torn edge. */
 .docket::before {
   top: -6px;
-  background-image: radial-gradient(
-    circle at 5px 6px,
-    var(--color-neutral-100) 0 5px,
-    transparent 5.5px
-  );
+  background-image: radial-gradient(circle at 6px 7px, var(--color-paper) 0 6px, transparent 6.5px);
 }
 
 .docket::after {
   bottom: -6px;
-  background-image: radial-gradient(
-    circle at 5px 0,
-    var(--color-neutral-100) 0 5px,
-    transparent 5.5px
-  );
+  background-image: radial-gradient(circle at 6px 0, var(--color-paper) 0 6px, transparent 6.5px);
 }
 
-/* Status stamped at an angle, the way a pass clerk would hit it. */
 .stamp {
   display: inline-block;
-  border: 2px solid var(--color-accent);
-  color: var(--color-accent);
-  font-family: var(--font-heading);
-  font-weight: 900;
-  letter-spacing: 0.16em;
+  border: 2px solid var(--color-primary-500);
+  color: var(--color-primary-600);
+  background: var(--color-primary-50);
+  border-radius: var(--radius-xs);
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  transform: rotate(-4deg);
+  transform: rotate(-3deg);
 }
-
-/* ── labels ────────────────────────────────────────────────────────────── */
-
-/* The system's recurring small-caps utility label: wide tracking,
-   uppercase. Used for kickers, meta rows and field labels throughout. */
-.label {
-  font-size: 11px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-}
-
-.label-tight { letter-spacing: 0.1em; }
-.label-wide { letter-spacing: 0.18em; }
 
 /* ── controls ──────────────────────────────────────────────────────────── */
 
-/* Button labels are flush left — a button wider than its label starts the
-   text at the left padding edge, never centered. */
 .btn {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
   cursor: pointer;
   text-decoration: none;
   appearance: none;
   font-family: var(--font-body);
-  font-size: 11px;
+  font-size: 14px;
   font-weight: 700;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  text-align: left;
-  border-radius: var(--radius-md);
+  letter-spacing: 0.01em;
+  border: 1px solid transparent;
+  border-radius: var(--radius-pill);
   /* 44px floor on every tap target. */
   min-height: 44px;
-  padding: 0 var(--space-4);
+  padding: 0 20px;
+  transition:
+    background var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur-fast) var(--ease-out),
+    transform var(--dur-fast) var(--ease-out);
+  /* Removes the 300ms tap delay without disabling pinch-zoom. */
+  touch-action: manipulation;
+}
+
+/* Press feedback that does not move anything around it. */
+.btn:not(:disabled):active {
+  transform: scale(0.97);
 }
 
 .btn:disabled {
@@ -288,83 +466,152 @@ img {
 }
 
 .btn-primary {
-  border: 0;
-  background: var(--color-accent);
+  background: linear-gradient(135deg, var(--color-primary-500), var(--color-primary-600));
   color: #fff;
+  box-shadow: var(--shadow-ember);
 }
-.btn-primary:not(:disabled):hover { background: var(--color-accent-600); }
-.btn-primary:not(:disabled):active { background: var(--color-accent-700); }
+.btn-primary:not(:disabled):hover {
+  background: linear-gradient(135deg, var(--color-primary-400), var(--color-primary-500));
+}
 
 .btn-secondary {
-  border: 2px solid var(--color-text);
-  background: transparent;
+  background: var(--color-surface);
+  border-color: var(--color-border-strong);
   color: var(--color-text);
+  box-shadow: var(--shadow-xs);
 }
 .btn-secondary:not(:disabled):hover {
-  background: var(--color-accent);
-  border-color: var(--color-accent);
-  color: #fff;
-}
-.btn-secondary:not(:disabled):active {
-  background: var(--color-accent-700);
-  border-color: var(--color-accent-700);
-  color: #fff;
+  border-color: var(--color-primary-400);
+  color: var(--color-primary-700);
+  background: var(--color-primary-50);
 }
 
-/* The quiet variant — used where a secondary would shout, e.g. the close
-   buttons on the guest sheets. */
 .btn-quiet {
-  border: 2px solid var(--color-text);
   background: transparent;
+  border-color: var(--color-border-strong);
+  color: var(--color-text-soft);
+}
+.btn-quiet:not(:disabled):hover {
+  background: var(--color-surface-2);
   color: var(--color-text);
 }
-.btn-quiet:not(:disabled):hover { background: var(--color-accent-100); }
-.btn-quiet:not(:disabled):active { background: var(--color-accent-200); }
+
+.btn-ghost {
+  background: transparent;
+  color: var(--color-primary-700);
+}
+.btn-ghost:not(:disabled):hover {
+  background: var(--color-primary-50);
+}
 
 .btn-icon {
   width: 44px;
   height: 44px;
   padding: 0;
-  justify-content: center;
+  border-radius: var(--radius-pill);
 }
 
 .btn-block {
   display: flex;
   width: 100%;
   justify-content: space-between;
+  padding: 0 22px;
 }
 
-/* The stepper: −  qty  + inside one 2px rule. */
+/* Buttons on the dark pass. */
+.btn-on-dark {
+  background: transparent;
+  border-color: var(--color-dark-600);
+  color: var(--color-dark-soft);
+}
+.btn-on-dark:not(:disabled):hover {
+  background: var(--color-dark-700);
+  color: var(--color-dark-text);
+  border-color: var(--color-dark-500);
+}
+
+/* ── the category rail ─────────────────────────────────────────────────── */
+
+.chip {
+  flex: 0 0 auto;
+  appearance: none;
+  cursor: pointer;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text-soft);
+  border-radius: var(--radius-pill);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  min-height: 40px;
+  padding: 0 16px;
+  white-space: nowrap;
+  transition:
+    background var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out);
+  touch-action: manipulation;
+}
+
+.chip:hover {
+  border-color: var(--color-primary-300);
+  color: var(--color-primary-700);
+}
+
+.chip[aria-current="true"] {
+  background: linear-gradient(135deg, var(--color-primary-500), var(--color-primary-600));
+  border-color: transparent;
+  color: #fff;
+  box-shadow: var(--shadow-ember);
+}
+
+/* ── the stepper ───────────────────────────────────────────────────────── */
+
 .stepper {
   display: inline-flex;
   align-items: stretch;
-  border: 2px solid var(--color-text);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+  box-shadow: var(--shadow-xs);
 }
 
 .stepper button {
   appearance: none;
   border: 0;
   background: transparent;
-  color: var(--color-text);
-  font-size: 16px;
+  color: var(--color-primary-700);
+  font-size: 18px;
   font-weight: 700;
+  line-height: 1;
   width: 44px;
-  min-height: 36px;
+  min-height: 40px;
   cursor: pointer;
+  transition: background var(--dur-fast) var(--ease-out);
+  touch-action: manipulation;
 }
-.stepper button:hover { background: var(--color-accent-100); }
-.stepper button:disabled { opacity: 0.4; cursor: not-allowed; background: transparent; }
+.stepper button:hover {
+  background: var(--color-primary-50);
+}
+.stepper button:active {
+  background: var(--color-primary-100);
+}
+.stepper button:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  background: transparent;
+}
 
 .stepper .qty {
   min-width: 34px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: var(--font-heading);
-  font-weight: 800;
-  font-size: 14px;
-  border-left: 2px solid var(--color-text);
-  border-right: 2px solid var(--color-text);
+  font-weight: 700;
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text);
 }
 
 /* ── forms ─────────────────────────────────────────────────────────────── */
@@ -376,32 +623,43 @@ img {
 }
 
 .field > span {
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 700;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
+  color: var(--color-text-soft);
 }
 
 .input {
   appearance: none;
   width: 100%;
-  border: 2px solid var(--color-text);
-  border-radius: var(--radius-md);
-  background: transparent;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
   font-family: var(--font-body);
-  font-size: 15px;
+  /* 16px so iOS does not zoom the page when the field takes focus. */
+  font-size: 16px;
   color: var(--color-text);
-  caret-color: var(--color-accent);
-  padding: 12px;
+  caret-color: var(--color-primary-500);
+  padding: 12px 14px;
   min-height: 48px;
+  transition:
+    border-color var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur-fast) var(--ease-out);
 }
 
-.input::placeholder { color: var(--color-neutral-600); }
-.input:hover { border-color: var(--color-accent-700); }
-.input:focus-visible { border-color: var(--color-accent); outline-offset: 0; }
+.input::placeholder {
+  color: var(--color-text-faint);
+}
+.input:hover {
+  border-color: var(--color-primary-300);
+}
+.input:focus-visible {
+  border-color: var(--color-primary-400);
+  box-shadow: 0 0 0 3px var(--color-primary-100);
+  outline: none;
+}
 
 textarea.input {
-  min-height: 90px;
+  min-height: 96px;
   resize: vertical;
 }
 
@@ -410,81 +668,117 @@ textarea.input {
 .tag {
   display: inline-flex;
   align-items: center;
-  font-size: 10px;
+  gap: 5px;
+  font-size: 11px;
   font-weight: 700;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  padding: 3px 6px;
-  border-radius: var(--radius-sm);
+  letter-spacing: 0.04em;
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
 }
 
-.tag-outline {
-  border: 1px solid var(--color-accent);
-  color: var(--color-accent-700);
+/* Gold, for the things the cafe is known for. */
+.tag-gold {
+  background: var(--color-gold-100);
+  color: var(--color-gold-700);
 }
 
-.tag-neutral {
-  border: 1px solid var(--color-neutral-400);
-  color: var(--color-neutral-600);
+.tag-ember {
+  background: var(--color-primary-100);
+  color: var(--color-primary-800);
+}
+
+.tag-muted {
+  background: var(--color-surface-2);
+  color: var(--color-text-faint);
+  border: 1px solid var(--color-border);
 }
 
 /* ── tables ────────────────────────────────────────────────────────────── */
 
 .table {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
   font-size: 14px;
 }
 
 .table th {
   text-align: left;
   font-size: 11px;
+  font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--color-neutral-700);
-  padding: var(--space-2);
-  border-bottom: 2px solid var(--color-text);
+  color: var(--color-text-faint);
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--color-border-strong);
   white-space: nowrap;
 }
 
 .table td {
-  padding: var(--space-2);
-  border-bottom: 1px solid var(--color-divider);
+  padding: 12px;
+  border-bottom: 1px solid var(--color-border);
 }
 
-.table tbody tr:hover { background: var(--color-accent-100); }
+.table tbody tr {
+  transition: background var(--dur-fast) var(--ease-out);
+}
+.table tbody tr:hover {
+  background: var(--color-surface-2);
+}
 
-/* ── rules ─────────────────────────────────────────────────────────────── */
+/* ── rules & leaders ───────────────────────────────────────────────────── */
 
 .hr {
-  height: 2px;
+  height: 1px;
   border: 0;
   margin: var(--space-4) 0;
-  background: var(--color-text);
+  background: var(--color-border);
 }
 
-/* The dotted leader that runs from an item name to its price, the way a
-   printed menu sets it. */
+/* The dotted leader running from a dish to its price — the one piece of
+   printed-menu grammar worth keeping. */
 .leader {
   flex: 1 1 auto;
-  border-bottom: 1px dotted var(--color-neutral-400);
-  transform: translateY(-4px);
+  min-width: 12px;
+  border-bottom: 1px dotted var(--color-border-strong);
+  transform: translateY(-5px);
 }
 
-.leader-solid {
-  flex: 1 1 auto;
-  border-bottom: 2px solid var(--color-text);
-  transform: translateY(-4px);
+/* ── decorative ────────────────────────────────────────────────────────── */
+
+/* The warm wash behind the masthead and the section bands. Cheap: two
+   gradients, no image, no blur. */
+.warm-wash {
+  background:
+    radial-gradient(120% 90% at 0% 0%, var(--color-primary-100) 0%, transparent 55%),
+    radial-gradient(120% 90% at 100% 0%, var(--color-gold-100) 0%, transparent 50%),
+    var(--color-bg);
+}
+
+.dark-wash {
+  background:
+    radial-gradient(90% 60% at 0% 0%, rgb(214 69 0 / 0.16) 0%, transparent 60%),
+    var(--color-dark-900);
+}
+
+/* A hairline gradient rule — replaces the old 2px black bars, which were
+   what made the whole thing read as a wireframe. */
+.rule-warm {
+  height: 1px;
+  border: 0;
+  background: linear-gradient(90deg, var(--color-border-strong), transparent);
 }
 
 /* ── print ─────────────────────────────────────────────────────────────── */
 
-/* The QR sheet is the artifact that decides whether the system actually
-   gets onto tables, so it gets real print styles: A4, 6 up, no chrome. */
 @media print {
-  .no-print { display: none !important; }
+  .no-print {
+    display: none !important;
+  }
 
-  body { background: #fff; }
+  body {
+    background: #fff;
+  }
 
   @page {
     size: A4;

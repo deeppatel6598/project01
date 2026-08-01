@@ -130,39 +130,43 @@ Rupee-denominated display and owner-facing input go through `formatINR` /
 
 ---
 
-## Design
+## Design — Warm Cafe
 
-The visual system is **Modernist**, ported from the Claude Design project that
-specified this build: flat and architectural, set entirely in Archivo,
-near-mono red (`#ec3013`) on a light ground, visible modular grid, **zero
-corner radius**, strong 2px rules, and photography printed in pure black and
-white.
+The original build shipped the **Modernist** system from the design file: flat,
+mono red on grey, zero corner radius, 2px hard rules, photography printed in
+black and white. It was coherent, but it read as a wireframe — and greyscale
+food is the wrong call for a menu.
 
-Tokens live at the top of `src/app/globals.css` and are the source of truth —
-retune there rather than hard-coding a hex or a px value a token already
-carries.
+The current theme keeps every functional decision that system got right and
+replaces the surface treatment:
 
-The signature element is the **docket**: paper stock, perforated top and bottom
-edge, order code, status stamped at an angle. It appears in both surfaces — the
-guest's confirmation screen is the same docket the kitchen sees, which is what
-quietly tells a guest their order really landed.
+| | Before | Now |
+| --- | --- | --- |
+| Ground | Neutral grey `#f3f2f2` | Warm cream `#fdf7f1`, no neutral greys anywhere |
+| Ink | Near-black | Espresso `#2b1d16` |
+| Accent | One red | Ember ramp (`#ea5310`) + a crema gold for badges |
+| Type | Archivo throughout | **Playfair Display** for dish names, prices and headlines; **Karla** for everything functional |
+| Shape | `radius: 0` | A real radius scale, pills on every control |
+| Depth | None | Warm brown-tinted shadows, never neutral black |
+| Imagery | Forced greyscale | A light warm grade |
+| Menu | Hard-ruled rows | Cards that lift on hover and tint ember when in the basket |
+| Pass | Grey-black | Warm espresso ground with an ember wash, colour-coded columns |
 
-The guest surface is light (read in daylight, part of the room); the pass is
-dark (a low-light working screen). That split is functional, not decorative.
+The serif/sans pairing is the point: it is the oldest convention in restaurant
+print, and it is what makes a list of items read as a menu rather than as a
+table of data.
 
-Motion is one orchestrated moment: a new docket sliding onto the board.
-Everything else is still, and `prefers-reduced-motion` turns even that off.
+Tokens live at the top of `src/app/globals.css` and are the source of truth.
+A `:root` block below them bridges the old Modernist names onto the new palette
+so staff-facing screens picked up the theme without every inline style being
+rewritten at once — new work should use the new tokens.
 
-**Two deliberate departures from the source files:**
-
-1. The design's perforated edge used `repeating-radial-gradient`, which draws
-   concentric rings inside each tile and reads as a comb of hairlines. It is
-   one circle per tile here, which gives the half-round scallops a torn docket
-   actually has.
-2. The brief said to skip the guest order-status screen because it "would need
-   a per-order secret token in the URL". The design ships that screen, so the
-   token exists — but it lives in `sessionStorage`, never the URL. See
-   [docs/SECURITY.md](docs/SECURITY.md).
+**What did not change:** the docket is still the signature element and is still
+shared by both surfaces, so the guest's confirmation is the same docket the
+kitchen sees. The light-guest / dark-pass split is still functional rather than
+decorative. 44px targets, AA contrast, visible focus rings, and
+`prefers-reduced-motion` all still hold. Motion is still one orchestrated
+moment — a docket landing — plus short state transitions.
 
 ---
 

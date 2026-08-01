@@ -16,11 +16,10 @@ export default async function AdminMenuPage() {
         <h1
           className="m-0"
           style={{
-            fontFamily: "var(--font-heading)",
-            fontWeight: 900,
+            fontFamily: "var(--font-display)",
+            fontWeight: 700,
             fontSize: 34,
-            letterSpacing: "-0.03em",
-            textTransform: "uppercase",
+            
           }}
         >
           {copy.admin.nav.menu}
@@ -38,8 +37,8 @@ export default async function AdminMenuPage() {
           <h2
             className="m-0"
             style={{
-              fontFamily: "var(--font-heading)",
-              fontWeight: 900,
+              fontFamily: "var(--font-display)",
+              fontWeight: 700,
               fontSize: 16,
               letterSpacing: "0.16em",
               textTransform: "uppercase",

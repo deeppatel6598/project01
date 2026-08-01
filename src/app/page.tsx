@@ -26,16 +26,15 @@ export default async function HomePage() {
     <div className="flex min-h-dvh flex-col">
       <header
         className="flex flex-wrap items-baseline justify-between gap-6 px-8 pt-6 pb-4"
-        style={{ borderBottom: "2px solid var(--color-text)" }}
+        style={{ borderBottom: "1px solid var(--color-border)" }}
       >
         <div className="flex flex-wrap items-baseline gap-4">
           <span
             style={{
-              fontFamily: "var(--font-heading)",
-              fontWeight: 900,
+              fontFamily: "var(--font-display)",
+              fontWeight: 700,
               fontSize: 22,
-              letterSpacing: "-0.02em",
-              textTransform: "uppercase",
+              
             }}
           >
             {copy.brand.product}
@@ -53,7 +52,7 @@ export default async function HomePage() {
       <main className="grid flex-1" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))" }}>
         <section
           className="flex flex-col gap-4 p-8"
-          style={{ borderRight: "2px solid var(--color-text)" }}
+          style={{ borderRight: "1px solid var(--color-border)" }}
         >
           <p className="label label-wide m-0" style={{ color: "var(--color-neutral-700)" }}>
             Guest — /t/&lt;code&gt;
@@ -62,12 +61,11 @@ export default async function HomePage() {
           <h1
             className="m-0"
             style={{
-              fontFamily: "var(--font-heading)",
-              fontWeight: 900,
+              fontFamily: "var(--font-display)",
+              fontWeight: 700,
               fontSize: 44,
               lineHeight: 0.88,
-              letterSpacing: "-0.04em",
-              textTransform: "uppercase",
+              
             }}
           >
             Scan
@@ -119,12 +117,11 @@ export default async function HomePage() {
           <h2
             className="m-0"
             style={{
-              fontFamily: "var(--font-heading)",
-              fontWeight: 900,
+              fontFamily: "var(--font-display)",
+              fontWeight: 700,
               fontSize: 44,
               lineHeight: 0.88,
-              letterSpacing: "-0.04em",
-              textTransform: "uppercase",
+              
             }}
           >
             {copy.kitchen.title}
@@ -144,7 +141,7 @@ export default async function HomePage() {
               href="/admin"
               className="btn"
               style={{
-                border: "2px solid var(--color-neutral-100)",
+                border: "1px solid var(--color-dark-700)",
                 color: "var(--color-neutral-100)",
                 alignSelf: "start",
               }}

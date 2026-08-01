@@ -34,17 +34,16 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     <div className="flex min-h-dvh flex-col">
       <header
         className="flex flex-wrap items-baseline justify-between gap-4 px-8 py-4"
-        style={{ borderBottom: "2px solid var(--color-text)" }}
+        style={{ borderBottom: "1px solid var(--color-border)" }}
       >
         <div className="flex flex-wrap items-baseline gap-4">
           <Link
             href="/admin"
             style={{
-              fontFamily: "var(--font-heading)",
-              fontWeight: 900,
+              fontFamily: "var(--font-display)",
+              fontWeight: 700,
               fontSize: 22,
-              letterSpacing: "-0.02em",
-              textTransform: "uppercase",
+              
               color: "var(--color-text)",
               textDecoration: "none",
             }}

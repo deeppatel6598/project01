@@ -1,14 +1,21 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 300" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Dining room">
+  <defs>
+    <linearGradient id="warm" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ffd9b8" stop-opacity="0.85"/>
+      <stop offset="1" stop-color="#f6c9a0" stop-opacity="0.35"/>
+    </linearGradient>
+  </defs>
   <!-- The masthead band. A drawn room rather than a photograph, so the guest
        menu paints completely with no external request. Replace with the
        cafe's own shot before launch — see docs/DEPLOYMENT.md. -->
-  <rect width="900" height="300" fill="#d7d3d3"/>
+  <rect width="900" height="300" fill="#f2e2ce"/>
+  <rect width="900" height="300" fill="url(#warm)"/>
 
   <!-- back wall shelving -->
-  <g fill="none" stroke="#201e1d" stroke-width="6">
+  <g fill="none" stroke="#43291a" stroke-width="6">
     <path d="M60 60h240M60 108h240M60 156h240"/>
   </g>
-  <g fill="#201e1d">
+  <g fill="#43291a">
     <rect x="76" y="28" width="20" height="32"/><rect x="108" y="34" width="14" height="26"/>
     <rect x="140" y="24" width="24" height="36"/><rect x="184" y="34" width="16" height="26"/>
     <rect x="220" y="28" width="20" height="32"/>
@@ -17,34 +24,34 @@
   </g>
 
   <!-- hanging lamps -->
-  <g stroke="#201e1d" stroke-width="6">
+  <g stroke="#43291a" stroke-width="6">
     <path d="M470 0v54M600 0v38M730 0v62"/>
   </g>
-  <g fill="#201e1d">
+  <g fill="#43291a">
     <path d="M440 54h60l-14 30h-32z"/>
     <path d="M574 38h52l-12 26h-28z"/>
     <path d="M700 62h60l-14 30h-32z"/>
   </g>
 
   <!-- counter -->
-  <rect x="0" y="196" width="900" height="14" fill="#201e1d"/>
-  <rect x="0" y="210" width="900" height="90" fill="#d7d3d3"/>
-  <g fill="none" stroke="#201e1d" stroke-width="6">
+  <rect x="0" y="196" width="900" height="14" fill="#43291a"/>
+  <rect x="0" y="210" width="900" height="90" fill="#fdf5ea"/>
+  <g fill="none" stroke="#43291a" stroke-width="6">
     <path d="M120 210v90M300 210v90M480 210v90M660 210v90M840 210v90"/>
   </g>
 
   <!-- espresso machine on the counter -->
-  <g fill="#201e1d">
+  <g fill="#43291a">
     <rect x="380" y="132" width="120" height="64"/>
     <rect x="404" y="112" width="72" height="20"/>
   </g>
-  <g fill="#d7d3d3">
+  <g fill="#fdf5ea">
     <rect x="398" y="150" width="26" height="20"/>
     <rect x="456" y="150" width="26" height="20"/>
   </g>
 
   <!-- cups waiting -->
-  <g fill="#201e1d">
+  <g fill="#43291a">
     <path d="M556 168h34v18a17 17 0 0 1-17 10 17 17 0 0 1-17-10z"/>
     <path d="M616 168h34v18a17 17 0 0 1-17 10 17 17 0 0 1-17-10z"/>
     <path d="M676 168h34v18a17 17 0 0 1-17 10 17 17 0 0 1-17-10z"/>

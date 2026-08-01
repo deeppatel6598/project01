@@ -32,7 +32,7 @@ export function AcceptingSwitch({ accepting }: { accepting: boolean }) {
         className="btn"
         style={{
           minHeight: 44,
-          border: "2px solid var(--color-text)",
+          border: "1px solid var(--color-border)",
           background: accepting ? "var(--color-accent)" : "transparent",
           color: accepting ? "#fff" : "var(--color-text)",
         }}

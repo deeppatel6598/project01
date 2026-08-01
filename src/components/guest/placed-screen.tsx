@@ -41,12 +41,11 @@ export function PlacedScreen({
       <h2
         className="m-0"
         style={{
-          fontFamily: "var(--font-heading)",
-          fontWeight: 900,
+          fontFamily: "var(--font-display)",
+          fontWeight: 700,
           fontSize: 34,
           lineHeight: 0.95,
-          letterSpacing: "-0.03em",
-          textTransform: "uppercase",
+          
         }}
       >
         {copy.guest.placedTitle[0]}
@@ -61,12 +60,12 @@ export function PlacedScreen({
       <div className="docket mt-6">
         <div
           className="flex items-baseline justify-between pb-2"
-          style={{ borderBottom: "2px solid var(--color-text)" }}
+          style={{ borderBottom: "1px solid var(--color-border)" }}
         >
           <span
             style={{
-              fontFamily: "var(--font-heading)",
-              fontWeight: 900,
+              fontFamily: "var(--font-display)",
+              fontWeight: 700,
               fontSize: 26,
               letterSpacing: "0.02em",
             }}
@@ -89,16 +88,16 @@ export function PlacedScreen({
             style={{ borderTop: "1px solid var(--color-divider)" }}
           >
             {line.imageUrl && (
-              <Thumb src={line.imageUrl} size={32} borderWidth={1.5} contrast={false} />
+              <Thumb src={line.imageUrl} size={34} radius="var(--radius-xs)" />
             )}
             <span
-              style={{ fontFamily: "var(--font-heading)", fontWeight: 800, fontSize: 13, minWidth: 26 }}
+              style={{ fontFamily: "var(--font-display)", fontWeight: 800, fontSize: 13, minWidth: 26 }}
             >
               {line.qty}×
             </span>
             <span style={{ fontSize: 14 }}>{line.name}</span>
             <Leader />
-            <span style={{ fontFamily: "var(--font-heading)", fontWeight: 800, fontSize: 14 }}>
+            <span style={{ fontFamily: "var(--font-display)", fontWeight: 800, fontSize: 14 }}>
               {formatINR(line.lineTotal)}
             </span>
           </div>
@@ -106,12 +105,12 @@ export function PlacedScreen({
 
         <div
           className="mt-2 flex items-baseline justify-between pt-3"
-          style={{ borderTop: "2px solid var(--color-text)" }}
+          style={{ borderTop: "1px solid var(--color-border)" }}
         >
           <span className="label" style={{ fontWeight: 700, letterSpacing: "0.16em" }}>
             {copy.guest.total}
           </span>
-          <span style={{ fontFamily: "var(--font-heading)", fontWeight: 900, fontSize: 22 }}>
+          <span style={{ fontFamily: "var(--font-display)", fontWeight: 900, fontSize: 22 }}>
             {formatINR(order.total)}
           </span>
         </div>
@@ -127,8 +126,8 @@ export function PlacedScreen({
         className="btn btn-primary btn-block mt-6"
         style={{
           minHeight: 52,
-          fontFamily: "var(--font-heading)",
-          fontWeight: 900,
+          fontFamily: "var(--font-display)",
+          fontWeight: 700,
           fontSize: 14,
           letterSpacing: "0.06em",
         }}

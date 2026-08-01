@@ -42,11 +42,10 @@ export default async function AdminOrdersPage({
         <h1
           className="m-0"
           style={{
-            fontFamily: "var(--font-heading)",
-            fontWeight: 900,
+            fontFamily: "var(--font-display)",
+            fontWeight: 700,
             fontSize: 34,
-            letterSpacing: "-0.03em",
-            textTransform: "uppercase",
+            
           }}
         >
           {copy.admin.nav.orders}
@@ -58,8 +57,7 @@ export default async function AdminOrdersPage({
       </div>
 
       <form
-        className="flex flex-wrap items-end gap-3 p-4"
-        style={{ border: "2px solid var(--color-text)" }}
+        className="panel flex flex-wrap items-end gap-3 p-4"
       >
         <label className="field">
           <span>From</span>
@@ -109,7 +107,7 @@ export default async function AdminOrdersPage({
           <tbody>
             {orders.map((order) => (
               <tr key={order.id}>
-                <td style={{ fontFamily: "var(--font-heading)", fontWeight: 800 }}>
+                <td style={{ fontFamily: "var(--font-display)", fontWeight: 800 }}>
                   {order.orderCode}
                 </td>
                 <td>{formatDate(order.placedAt)}</td>

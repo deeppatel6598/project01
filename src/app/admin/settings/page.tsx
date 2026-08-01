@@ -15,24 +15,23 @@ export default async function AdminSettingsPage() {
       <h1
         className="m-0"
         style={{
-          fontFamily: "var(--font-heading)",
-          fontWeight: 900,
+          fontFamily: "var(--font-display)",
+          fontWeight: 700,
           fontSize: 34,
-          letterSpacing: "-0.03em",
-          textTransform: "uppercase",
+          
         }}
       >
         {copy.admin.nav.settings}
       </h1>
 
-      <section className="p-4" style={{ border: "2px solid var(--color-text)" }}>
+      <section className="panel p-4">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <h2
               className="m-0"
               style={{
-                fontFamily: "var(--font-heading)",
-                fontWeight: 900,
+                fontFamily: "var(--font-display)",
+                fontWeight: 700,
                 fontSize: 16,
                 letterSpacing: "0.16em",
                 textTransform: "uppercase",

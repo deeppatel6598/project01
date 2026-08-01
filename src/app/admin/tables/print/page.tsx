@@ -41,7 +41,7 @@ export default async function PrintSheetPage() {
     <>
       <div
         className="no-print mb-6 flex flex-wrap items-center justify-between gap-4 p-4"
-        style={{ border: "2px solid var(--color-text)" }}
+        style={{ border: "1px solid var(--color-border)" }}
       >
         <div>
           <p className="label label-wide m-0" style={{ color: "var(--color-neutral-700)" }}>
@@ -83,16 +83,15 @@ export default async function PrintSheetPage() {
               alt=""
               width={180}
               height={180}
-              style={{ width: 180, height: 180, border: "2px solid var(--color-text)" }}
+              style={{ width: 180, height: 180, border: "1px solid var(--color-border)", background: "#fff" }}
             />
 
             <figcaption
               style={{
-                fontFamily: "var(--font-heading)",
-                fontWeight: 900,
+                fontFamily: "var(--font-display)",
+                fontWeight: 700,
                 fontSize: 22,
-                letterSpacing: "-0.02em",
-                textTransform: "uppercase",
+                
               }}
             >
               {table.label}
